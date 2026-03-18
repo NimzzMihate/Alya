@@ -1,7 +1,6 @@
 const GITHUB_USER = "NimzzMihate";
 const GITHUB_REPO = "alya-data";
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
-const BOT_API = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
 
 async function fetchData(file) {
   try {
@@ -26,7 +25,6 @@ const PAGES = [
   { href: "feedback.html",    icon: "fa-paper-plane", label: "Feedback" },
 ];
 
-// THEME
 function getTheme() {
   const saved = localStorage.getItem("theme");
   if (saved) return saved;
@@ -51,9 +49,7 @@ function renderNav() {
   const current = window.location.pathname.split("/").pop() || "index.html";
   const nav = document.getElementById("navbar");
   if (!nav) return;
-
   const theme = getTheme();
-
   nav.innerHTML = `
     <div class="nav-inner">
       <div class="nav-logo">
@@ -70,8 +66,6 @@ function renderNav() {
         </button>
       </div>
     </div>
-
-    <!-- DROPDOWN MENU -->
     <div class="nav-dropdown" id="navDropdown">
       <div class="nav-dropdown-inner">
         ${PAGES.map(p => `
@@ -83,7 +77,6 @@ function renderNav() {
       </div>
     </div>
     <div class="nav-overlay" id="navOverlay" onclick="closeMenu()"></div>`;
-
   applyTheme(theme);
 }
 
@@ -107,17 +100,16 @@ function closeMenu() {
   const dropdown = document.getElementById("navDropdown");
   const overlay = document.getElementById("navOverlay");
   const icon = document.getElementById("hamburgerIcon");
-  dropdown.classList.remove("open");
-  overlay.classList.remove("show");
-  icon.className = "fa-solid fa-bars";
+  if (dropdown) dropdown.classList.remove("open");
+  if (overlay) overlay.classList.remove("show");
+  if (icon) icon.className = "fa-solid fa-bars";
 }
 
 function setLastUpdated(ts) {
   if (!ts) return;
   const el = document.getElementById("navUpdated");
   if (!el) return;
-  const d = new Date(ts);
-  el.textContent = `Updated: ${d.toLocaleTimeString("id-ID")}`;
+  el.textContent = `Updated: ${new Date(ts).toLocaleTimeString("id-ID")}`;
 }
 
 function esc(s) {
@@ -140,25 +132,52 @@ function formatRuntime(s) {
 
 const NAV_CSS = `
   :root {
-    --bg: #0d0d0d; --card: #161616; --border: #262626;
-    --text-main: #ffffff; --text-dim: #888888; --text-sub: #555555;
-    --accent: #4ade80; --nav-bg: rgba(13,13,13,0.95);
-    --input-bg: #1a1a1a; --hover-bg: #1e1e1e;
+    --bg:#0d0d0d; --card:#161616; --border:#262626;
+    --text-main:#ffffff; --text-dim:#888888; --text-sub:#555555;
+    --accent:#4ade80; --nav-bg:rgba(13,13,13,0.95);
+    --input-bg:#1a1a1a; --hover-bg:#1e1e1e;
   }
   [data-theme="light"] {
-    --bg: #f5f5f5; --card: #ffffff; --border: #e0e0e0;
-    --text-main: #111111; --text-dim: #555555; --text-sub: #888888;
-    --accent: #16a34a; --nav-bg: rgba(245,245,245,0.95);
-    --input-bg: #f0f0f0; --hover-bg: #eeeeee;
+    --bg:#f5f5f5; --card:#ffffff; --border:#e0e0e0;
+    --text-main:#111111; --text-dim:#444444; --text-sub:#777777;
+    --accent:#16a34a; --nav-bg:rgba(245,245,245,0.95);
+    --input-bg:#f0f0f0; --hover-bg:#eeeeee;
   }
 
+  html, body { overflow-x: hidden !important; }
   * { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease; }
+  body { background-color: var(--bg) !important; color: var(--text-main) !important; }
 
-  body {
-    background-color: var(--bg) !important;
-    color: var(--text-main) !important;
+  /* LIGHT MODE TEXT FIXES */
+  [data-theme="light"] .page-sub,
+  [data-theme="light"] .hero p,
+  [data-theme="light"] .feature-card p,
+  [data-theme="light"] .step-card p,
+  [data-theme="light"] .stats-bar-item .lbl,
+  [data-theme="light"] .metric-card .lbl,
+  [data-theme="light"] .stat-card .lbl,
+  [data-theme="light"] .section-label,
+  [data-theme="light"] .snippet-row-meta,
+  [data-theme="light"] .cmd-type,
+  [data-theme="light"] .activity-time,
+  [data-theme="light"] .profile-bio,
+  [data-theme="light"] .hero-stat { color: var(--text-dim) !important; }
+
+  [data-theme="light"] .stats-bar-item .val,
+  [data-theme="light"] .metric-card .val,
+  [data-theme="light"] .stat-card .val,
+  [data-theme="light"] .page-title,
+  [data-theme="light"] .hero h1 { color: var(--text-main) !important; }
+
+  /* STATS BAR — hapus highlight hitam pas tap */
+  .stats-bar-item {
+    -webkit-tap-highlight-color: transparent !important;
+    background: var(--card) !important;
   }
+  .stats-bar-item:active { background: var(--card) !important; }
+  .stats-bar-item:focus { background: var(--card) !important; outline: none; }
 
+  /* NAVBAR */
   #navbar {
     background: var(--nav-bg);
     backdrop-filter: blur(12px);
@@ -180,42 +199,41 @@ const NAV_CSS = `
   }
   .nav-logo i { color: var(--accent); font-size: 13px; }
 
-  .nav-right-group {
-    display: flex; align-items: center; gap: 8px;
-  }
-
-  .nav-updated {
-    font-size: 11px; color: var(--text-sub);
-    font-family: 'Fira Code', monospace;
-  }
+  .nav-right-group { display: flex; align-items: center; gap: 8px; }
+  .nav-updated { font-size: 11px; color: var(--text-sub); font-family: 'Fira Code', monospace; }
 
   .nav-icon-btn {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 7px; width: 34px; height: 34px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; color: var(--text-dim); font-size: 13px;
-    transition: all 0.2s;
+    transition: all 0.2s; -webkit-tap-highlight-color: transparent;
   }
   .nav-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* DROPDOWN */
+  /* DROPDOWN - fix overflow horizontal */
   .nav-dropdown {
     position: fixed;
     top: 52px; right: 0;
-    width: 260px;
+    width: 240px;
     background: var(--card);
     border-left: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     border-radius: 0 0 0 14px;
     padding: 10px;
     z-index: 299;
-    transform: translateX(100%);
-    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    transform: translateX(110%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0.3s;
     max-height: calc(100vh - 52px);
-    overflow-y: auto;
+    overflow-y: auto; overflow-x: hidden;
   }
 
-  .nav-dropdown.open { transform: translateX(0); }
+  .nav-dropdown.open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0s linear 0s;
+  }
 
   .nav-dropdown-inner { display: flex; flex-direction: column; gap: 2px; }
 
@@ -224,8 +242,8 @@ const NAV_CSS = `
     padding: 10px 12px; border-radius: 8px;
     font-size: 13px; color: var(--text-dim);
     text-decoration: none; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-
   .nav-dropdown-link:hover { background: var(--hover-bg); color: var(--text-main); }
   .nav-dropdown-link.active { background: var(--hover-bg); color: var(--text-main); font-weight: 600; }
   .nav-dropdown-link i { font-size: 12px; width: 16px; text-align: center; }
