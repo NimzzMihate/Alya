@@ -20,6 +20,8 @@ const PAGES = [
   { href: "commands.html",    icon: "fa-terminal",    label: "Commands" },
   { href: "leaderboard.html", icon: "fa-trophy",      label: "Leaderboard" },
   { href: "snippets.html",    icon: "fa-code",        label: "Snippets" },
+  { href: "portfolio.html",   icon: "fa-user",        label: "Portfolio" },
+  { href: "linktree.html",    icon: "fa-link",        label: "Links" },
 ];
 
 function renderNav() {
