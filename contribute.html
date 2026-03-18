@@ -35,7 +35,7 @@
     .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
     /* CONTRIBUTOR CAROUSEL */
-    .carousel-wrap { position: relative; margin-bottom: 48px; overflow: hidden; }
+    .carousel-wrap { position: relative; margin-bottom: 48px; overflow: hidden; padding-top: 8px; }
 
     .carousel-track {
       display: flex;
@@ -48,11 +48,12 @@
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 24px;
+      padding: 28px 24px 24px;
       text-align: center;
       flex-shrink: 0;
       width: 200px;
       transition: border-color 0.2s, transform 0.2s;
+      margin-top: 4px;
     }
 
     .contrib-card:hover { border-color: var(--accent); transform: translateY(-4px); }
@@ -171,7 +172,7 @@
       <div class="carousel-track" id="carouselTrack">
         <!-- Nimzz -->
         <div class="contrib-card">
-          <img src="https://files.catbox.moe/fxcuut.jpg" class="contrib-avatar" alt="Nimzz"
+          <img src="https://avatars.githubusercontent.com/u/NimzzMihate?v=4" class="contrib-avatar" alt="Nimzz"
                onerror="this.src='https://avatars.githubusercontent.com/u/NimzzMihate'"/>
           <div class="contrib-name">Nimzz</div>
           <div class="contrib-role">// Main Developer</div>
@@ -189,8 +190,7 @@
         
         <!-- Alya -->
         <div class="contrib-card">
-          <img src="https://files.catbox.moe/suvt42.jpg" class="contrib-avatar" alt="Alya"
-               onerror="this.onerror=null;this.src='https://avatars.githubusercontent.com/NimzzMihate'"/>
+          <img src="https://avatars.githubusercontent.com/u/NimzzMihate?v=4" class="contrib-avatar" alt="Alya"/>
           <div class="contrib-name">Alya</div>
           <div class="contrib-role">// Bot Character</div>
           <div class="contrib-tags">
