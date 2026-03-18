@@ -247,7 +247,6 @@
         <button class="submit-btn" id="submitBtn" onclick="submitFeedback()">
           <i class="fa-solid fa-paper-plane"></i> Kirim ke Developer
         </button>
-        <div id="waBtnWrap" style="display:none;margin-top:12px"></div>
       </div>
     </div>
 
@@ -334,6 +333,52 @@
       setTimeout(() => { el.style.display = "none"; }, 5000);
     }
 
+    // Token GitHub khusus write ke alya-data saja
+    // Ganti dengan token kamu: Settings > Developer settings > Fine-grained tokens
+    // Permission: Contents = Read and Write, hanya untuk repo alya-data
+    const GH_TOKEN = "GANTI_GITHUB_TOKEN_KAMU";
+
+    async function pushFeedbackToGithub(entry) {
+      const repoFull = `${GITHUB_USER}/${GITHUB_REPO}`;
+      const filename = "feedback.json";
+      const headers = {
+        Authorization: `token ${GH_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      };
+
+      // Ambil data existing + SHA
+      let existing = [];
+      let sha = null;
+      try {
+        const res = await fetch(`https://api.github.com/repos/${repoFull}/contents/${filename}`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          sha = data.sha;
+          existing = JSON.parse(atob(data.content.replace(/\n/g, ""))) || [];
+        }
+      } catch (e) {}
+
+      // Tambah entry baru
+      existing.unshift(entry);
+      if (existing.length > 50) existing.pop();
+
+      // Push ke GitHub
+      const body = {
+        message: `feedback: ${entry.type} dari ${entry.name}`,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(existing, null, 2)))),
+        ...(sha ? { sha } : {})
+      };
+
+      const pushRes = await fetch(
+        `https://api.github.com/repos/${repoFull}/contents/${filename}`,
+        { method: "PUT", headers, body: JSON.stringify(body) }
+      );
+
+      if (!pushRes.ok) throw new Error("Gagal push ke GitHub");
+      return true;
+    }
+
     async function submitFeedback() {
       const name = document.getElementById("senderName").value.trim();
       const msg = document.getElementById("msgInput").value.trim();
@@ -344,44 +389,36 @@
 
       const btn = document.getElementById("submitBtn");
       btn.disabled = true;
-      btn.innerHTML = '<div class="spinner"></div> Menyiapkan...';
+      btn.innerHTML = '<div class="spinner"></div> Mengirim...';
 
       try {
-        const typeEmoji = { saran:"[Saran]", request:"[Request]", pesan:"[Pesan]", bug:"[Bug]" };
-
-        // Simpan ke localStorage
-        const recents = JSON.parse(localStorage.getItem("feedbacks") || "[]");
-        recents.unshift({
+        const entry = {
+          id: Math.random().toString(36).slice(2, 8),
           type: currentType,
           name,
           message: msg,
-          time: new Date().toLocaleString("id-ID")
-        });
+          timestamp: Date.now(),
+          sent: false
+        };
+
+        await pushFeedbackToGithub(entry);
+
+        // Simpan ke localStorage juga buat recent list
+        const recents = JSON.parse(localStorage.getItem("feedbacks") || "[]");
+        recents.unshift({ ...entry, time: new Date().toLocaleString("id-ID") });
         if (recents.length > 10) recents.pop();
         localStorage.setItem("feedbacks", JSON.stringify(recents));
         updateRecentList(recents);
 
-        // Format pesan untuk bot
-        const waText = `.webfeedback ${currentType}|${name}|${msg}`;
-        const waMsg = encodeURIComponent(waText);
-
-        showAlert(`${typeLabels[currentType]} siap! Klik tombol WhatsApp untuk kirim ke developer 🎉`, "success");
-
-        // Tampilkan tombol WA
-        const waBtn = document.getElementById("waBtnWrap");
-        waBtn.style.display = "block";
-        waBtn.innerHTML = `
-          <a href="https://wa.me/6281915895220?text=${waMsg}" target="_blank" class="wa-send-btn">
-            <i class="fa-brands fa-whatsapp"></i> Klik untuk Kirim via WhatsApp
-          </a>
-          <p style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:8px">WhatsApp akan terbuka, tinggal klik Send</p>`;
-
+        showAlert(`${typeLabels[currentType]} berhasil dikirim! Bot akan meneruskan ke developer otomatis.`, "success");
         document.getElementById("senderName").value = "";
         document.getElementById("msgInput").value = "";
+        document.getElementById("waBtnWrap").style.display = "none";
         updateCharCount();
 
       } catch (e) {
-        showAlert("Gagal menyiapkan pesan, coba lagi!", "error");
+        showAlert("Gagal mengirim, coba lagi!", "error");
+        console.error(e);
       }
 
       btn.disabled = false;
