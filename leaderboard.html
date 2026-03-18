@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard — Alya MD</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 50px 50px;
+      color: var(--text-main); font-family: 'Inter',sans-serif;
+      min-height: 100vh; padding-bottom: 80px;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+    .page-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 6px; }
+    .page-title span { color: var(--accent); }
+    .page-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+    .tabs { display:flex; gap:6px; margin-bottom:24px; }
+    .tab-btn {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:7px; padding:8px 16px; font-size:12px; font-weight:600;
+      color:var(--text-dim); cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; gap:7px; font-family:'Inter',sans-serif;
+    }
+    .tab-btn:hover { border-color:#333; color:#ccc; }
+    .tab-btn.active { background:#1a1a1a; border-color:#444; color:#fff; }
+    .podium { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:28px; }
+    .podium-item {
+      flex:1; max-width:200px; background:var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:18px 14px; text-align:center;
+    }
+    .podium-item.p1 { border-color:#3a3a1a; }
+    .podium-item.p2 { border-color:#2a2a2a; }
+    .podium-item.p3 { border-color:#2a1a0a; }
+    .podium-rank { font-size:20px; font-weight:800; margin-bottom:6px; }
+    .p1 .podium-rank { color:#fbbf24; }
+    .p2 .podium-rank { color:#9ca3af; }
+    .p3 .podium-rank { color:#d97706; }
+    .podium-name { font-size:13px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .podium-val { font-size:12px; color:var(--text-dim); font-family:'Fira Code',monospace; }
+    .section-label {
+      font-size:11px; font-weight:600; color:var(--text-dim);
+      text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .lb-table { width:100%; border-collapse:collapse; }
+    .lb-table thead tr { border-bottom:1px solid var(--border); }
+    .lb-table th { padding:9px 14px; text-align:left; font-size:10px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+    .lb-table tbody tr { border-bottom:1px solid #1a1a1a; transition:background 0.15s; }
+    .lb-table tbody tr:last-child { border-bottom:none; }
+    .lb-table tbody tr:hover { background:#111; }
+    .lb-table td { padding:11px 14px; font-size:13px; }
+    .lb-table td.rank { font-family:'Fira Code',monospace; color:#444; font-size:12px; }
+    .lb-table td.name { font-weight:600; }
+    .lb-table td.val { font-family:'Fira Code',monospace; color:var(--accent); font-size:12px; }
+    .empty-state { text-align:center; padding:80px 24px; color:#333; }
+    .empty-state i { font-size:36px; margin-bottom:14px; display:block; }
+    .loading-state { display:flex; align-items:center; justify-content:center; gap:12px; padding:80px; color:#333; font-size:13px; }
+    .spinner { width:18px; height:18px; border:2px solid #222; border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @media (max-width:600px) { .container { padding:24px 16px; } .podium { gap:8px; } }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <div class="container">
+    <div class="page-title">Leader<span>board</span></div>
+    <div class="page-sub">Ranking user berdasarkan berbagai kategori</div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('level',this)"><i class="fa-solid fa-star"></i> Level</button>
+      <button class="tab-btn" onclick="switchTab('saldo',this)"><i class="fa-solid fa-coins"></i> Saldo</button>
+      <button class="tab-btn" onclick="switchTab('exp',this)"><i class="fa-solid fa-bolt"></i> EXP</button>
+    </div>
+    <div id="lbContainer"><div class="loading-state"><div class="spinner"></div><span>Memuat...</span></div></div>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script>
+    injectNavCSS();
+    renderNav();
+    let lbData = null;
+    let currentTab = "level";
+
+    async function load() {
+      lbData = await fetchData("leaderboard.json");
+      if (!lbData) {
+        document.getElementById("lbContainer").innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Data belum tersedia</p></div>`;
+        return;
+      }
+      setLastUpdated(lbData.lastUpdated);
+      render(currentTab);
+    }
+
+    function switchTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (lbData) render(tab);
+    }
+
+    function render(tab) {
+      const c = document.getElementById("lbContainer");
+      const list = lbData[tab] || [];
+      if (!list.length) {
+        c.innerHTML = `<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Belum ada data</p></div>`;
+        return;
+      }
+
+      const medals = ["🥇","🥈","🥉"];
+      const top3 = list.slice(0, 3);
+      const rest = list.slice(3);
+      const podOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
+      const podClass = top3.length >= 3 ? ["p2","p1","p3"] : ["p1","p2","p3"];
+      const medalIdx = top3.length >= 3 ? [1,0,2] : [0,1,2];
+
+      const fmtVal = (u) => tab === "saldo" ? "Rp " + formatNum(u[tab]) : formatNum(u[tab]);
+
+      c.innerHTML = `
+        <div class="podium">
+          ${podOrder.map((u,i) => `
+            <div class="podium-item ${podClass[i]}">
+              <div class="podium-rank">${medals[medalIdx[i]]}</div>
+              <div class="podium-name">${esc(u.name)}</div>
+              <div class="podium-val">${fmtVal(u)}</div>
+            </div>`).join("")}
+        </div>
+        ${rest.length ? `
+        <div class="section-label">Selanjutnya</div>
+        <table class="lb-table">
+          <thead><tr><th>#</th><th>Nama</th><th>${tab.charAt(0).toUpperCase()+tab.slice(1)}</th></tr></thead>
+          <tbody>
+            ${rest.map((u,i) => `
+              <tr>
+                <td class="rank">${i+4}</td>
+                <td class="name">${esc(u.name)}</td>
+                <td class="val">${fmtVal(u)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>` : ""}`;
+    }
+
+    load();
+    setInterval(load, 60000);
+  </script>
+</body>
+</html>
