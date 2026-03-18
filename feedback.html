@@ -333,10 +333,7 @@
       setTimeout(() => { el.style.display = "none"; }, 5000);
     }
 
-    // Token GitHub khusus write ke alya-data saja
-    // Ganti dengan token kamu: Settings > Developer settings > Fine-grained tokens
-    // Permission: Contents = Read and Write, hanya untuk repo alya-data
-    const GH_TOKEN = "GANTI_GITHUB_TOKEN_KAMU";
+    Authorization: `token ${GH_TOKEN}`,
 
     async function pushFeedbackToGithub(entry) {
       const repoFull = `${GITHUB_USER}/${GITHUB_REPO}`;
