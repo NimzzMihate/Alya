@@ -6,120 +6,684 @@
   <title>Dashboard — Alya MD</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
+    :root {
+      --bg: #0d0d0d;
+      --card: #161616;
+      --card2: #1a1a1a;
+      --border: #262626;
+      --text-main: #fff;
+      --text-dim: #666;
+      --accent: #4ade80;
+      --sidebar-w: 220px;
+    }
+
     * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+
     body {
       background: var(--bg);
-      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
-      background-size: 50px 50px;
-      color: var(--text-main); font-family: 'Inter',sans-serif;
-      min-height: 100vh; padding-bottom: 80px;
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
     }
-    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
-    .page-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 6px; }
-    .page-title span { color: var(--accent); }
-    .page-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 36px; }
-    .section-label {
-      font-size: 11px; font-weight: 600; color: var(--text-dim);
-      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
-      display: flex; align-items: center; gap: 10px;
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    .fade { opacity:0; animation: fadeUp 0.4s ease forwards; }
+    .fade.d1 { animation-delay:0.05s; }
+    .fade.d2 { animation-delay:0.1s; }
+    .fade.d3 { animation-delay:0.15s; }
+    .fade.d4 { animation-delay:0.2s; }
+    .fade.d5 { animation-delay:0.25s; }
+    .fade.d6 { animation-delay:0.3s; }
+    .fade.d7 { animation-delay:0.35s; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+      overflow-y: auto;
     }
-    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
-    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin-bottom:36px; }
+
+    .sidebar-logo {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #000; font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo .logo-text {
+      font-size: 13px; font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-logo .logo-sub {
+      font-size: 10px; color: var(--text-dim);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .sidebar-nav {
+      padding: 12px 10px;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover { background: #1e1e1e; color: #ccc; }
+    .nav-item.active { background: #1e1e1e; color: var(--text-main); }
+    .nav-item.active i { color: var(--accent); }
+    .nav-item i { font-size: 12px; width: 16px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .bot-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #333;
+      flex-shrink: 0;
+    }
+    .status-dot.online { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+    /* MAIN */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left .page-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .topbar-left .page-path {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .updated-badge {
+      font-size: 11px;
+      color: #444;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .refresh-btn {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .refresh-btn:hover { border-color: #333; color: var(--text-main); }
+
+    /* CONTENT */
+    .content {
+      padding: 28px;
+      flex: 1;
+    }
+
+    .content-header {
+      margin-bottom: 24px;
+    }
+
+    .content-header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+
+    .content-header h1 span { color: var(--accent); }
+
+    .content-header p {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* STAT CARDS ROW */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
     .stat-card {
-      background:var(--card); border:1px solid var(--border);
-      border-radius:10px; padding:16px; transition:border-color 0.2s,transform 0.2s;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .stat-card:hover { border-color:#333; transform:translateY(-2px); }
-    .stat-card .ico { font-size:13px; color:var(--text-dim); margin-bottom:10px; }
-    .stat-card .val { font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:3px; }
-    .stat-card .lbl { font-size:11px; color:var(--text-dim); }
-    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:36px; }
-    .analytics-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; }
-    .card-title { font-size:11px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-    .cmd-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #1a1a1a; font-size:12px; }
-    .cmd-row:last-child { border-bottom:none; }
-    .cmd-row .rank { font-size:10px; color:#333; font-family:'Fira Code',monospace; width:20px; flex-shrink:0; }
-    .cmd-row .name { font-family:'Fira Code',monospace; color:var(--accent); flex:1; }
-    .cmd-row .bar-wrap { flex:1; height:4px; background:#1e1e1e; border-radius:2px; overflow:hidden; }
-    .cmd-row .bar { height:100%; background:var(--accent); opacity:0.6; border-radius:2px; }
-    .cmd-row .count { font-family:'Fira Code',monospace; font-size:11px; color:var(--text-dim); width:40px; text-align:right; }
-    .rating-big { font-size:52px; font-weight:800; letter-spacing:-3px; margin-bottom:4px; }
-    .rating-sub { font-size:12px; color:var(--text-dim); margin-bottom:14px; }
-    .stars { display:flex; gap:4px; margin-bottom:14px; }
-    .stars i { font-size:12px; color:#333; }
-    .stars i.on { color:#fbbf24; }
-    .loading-state { display:flex; align-items:center; justify-content:center; gap:12px; padding:80px; color:#333; font-size:13px; }
-    .spinner { width:18px; height:18px; border:2px solid #222; border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--accent-color, var(--accent));
+      border-radius: 10px 0 0 10px;
+    }
+
+    .stat-card:hover { border-color: #2a2a2a; transform: translateY(-2px); }
+
+    .stat-card .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .stat-val {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 2px;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* GRID LAYOUT */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .grid-3-1 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i { color: var(--accent); font-size: 11px; }
+
+    .card-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .card-body { padding: 18px; }
+
+    /* CHART */
+    .chart-wrap {
+      position: relative;
+      height: 200px;
+    }
+
+    /* CMD LIST */
+    .cmd-list { padding: 0; }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 12px;
+      transition: background 0.15s;
+    }
+
+    .cmd-item:last-child { border-bottom: none; }
+    .cmd-item:hover { background: #1a1a1a; }
+
+    .cmd-item .n { font-size: 10px; color: #333; font-family: 'Fira Code', monospace; width: 18px; flex-shrink: 0; }
+    .cmd-item .name { font-family: 'Fira Code', monospace; color: var(--accent); flex: 1; }
+    .cmd-item .bar-wrap { flex: 1; height: 3px; background: #1e1e1e; border-radius: 2px; overflow: hidden; }
+    .cmd-item .bar { height: 100%; background: var(--accent); opacity: 0.5; border-radius: 2px; transition: width 0.8s ease; }
+    .cmd-item .cnt { font-family: 'Fira Code', monospace; font-size: 10px; color: #444; width: 36px; text-align: right; }
+
+    /* RATING */
+    .rating-display {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px;
+    }
+
+    .rating-num {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .rating-info { flex: 1; }
+
+    .rating-stars {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+
+    .rating-stars i { font-size: 13px; color: #2a2a2a; }
+    .rating-stars i.on { color: #fbbf24; }
+
+    .rating-votes { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+
+    .rating-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 10px;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .rating-bar-row .rl { color: #444; width: 16px; text-align: right; }
+    .rating-bar-row .rw { flex: 1; height: 3px; background: #1e1e1e; border-radius: 2px; overflow: hidden; }
+    .rating-bar-row .rf { height: 100%; background: #fbbf24; opacity: 0.6; border-radius: 2px; }
+
+    /* ACTIVITY */
+    .activity-list { padding: 0; }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 12px;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .activity-text { flex: 1; color: #ccc; }
+    .activity-text span { color: var(--accent); }
+    .activity-time { font-size: 10px; color: #444; font-family: 'Fira Code', monospace; }
+
+    /* EMPTY & LOADING */
+    .loading-state { display:flex; align-items:center; justify-content:center; gap:12px; padding:60px; color:#333; font-size:13px; }
+    .spinner { width:16px; height:16px; border:2px solid #222; border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    @media (max-width:700px) { .two-col { grid-template-columns:1fr; } .container { padding:24px 16px; } }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .grid-2, .grid-3-1 { grid-template-columns: 1fr; }
+      .content { padding: 16px; }
+      .topbar { padding: 0 16px; }
+      .rating-display { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
   </style>
 </head>
 <body>
-  <div id="navbar"></div>
-  <div class="container">
-    <div class="page-title">Bot <span>Dashboard</span></div>
-    <div class="page-sub">Statistik dan analitik bot secara realtime</div>
-    <div id="mainContainer">
-      <div class="loading-state"><div class="spinner"></div><span>Memuat data...</span></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">A</div>
+    <div>
+      <div class="logo-text">Alya MD</div>
+      <div class="logo-sub">WhatsApp Bot</div>
     </div>
   </div>
 
-  <script src="assets/config.js"></script>
-  <script>
-    injectNavCSS();
-    renderNav();
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Menu</div>
+    <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="status.html" class="nav-item"><i class="fa-solid fa-signal"></i> Status</a>
 
-    async function load() {
-      const data = await fetchData("stats.json");
-      const c = document.getElementById("mainContainer");
-      if (!data) {
-        c.innerHTML = `<div style="text-align:center;padding:80px;color:#333"><i class="fa-solid fa-triangle-exclamation" style="font-size:36px;display:block;margin-bottom:14px"></i><p style="font-size:13px">Data belum tersedia. Bot belum push data ke GitHub.</p></div>`;
-        return;
-      }
+    <div class="nav-section-label" style="margin-top:8px">Data</div>
+    <a href="commands.html" class="nav-item"><i class="fa-solid fa-terminal"></i> Commands</a>
+    <a href="leaderboard.html" class="nav-item"><i class="fa-solid fa-trophy"></i> Leaderboard</a>
+    <a href="snippets.html" class="nav-item"><i class="fa-solid fa-code"></i> Snippets</a>
+  </nav>
 
-      setLastUpdated(data.lastUpdated);
+  <div class="sidebar-footer">
+    <div class="bot-status">
+      <div class="status-dot" id="sidebarDot"></div>
+      <span id="sidebarStatus">Connecting...</span>
+    </div>
+  </div>
+</div>
 
-      const topCmdsHtml = (data.topCommands || []).length
-        ? data.topCommands.map((c, i) => {
-            const max = data.topCommands[0].count;
-            return `<div class="cmd-row"><span class="rank">${i+1}</span><span class="name">.${esc(c.cmd)}</span><div class="bar-wrap"><div class="bar" style="width:${Math.round((c.count/max)*100)}%"></div></div><span class="count">${c.count}</span></div>`;
-          }).join("")
-        : `<div style="color:#333;font-size:12px;padding:16px 0">Belum ada data command</div>`;
+<!-- MAIN -->
+<div class="main">
 
-      const starsHtml = Array.from({length:10}, (_,i) =>
-        `<i class="fa-solid fa-star${i < Math.round(data.ratingAvg) ? " on" : ""}"></i>`
-      ).join("");
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-name">Dashboard</div>
+      <div class="page-path">alya-md / dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <span class="updated-badge" id="updatedBadge">-</span>
+      <button class="refresh-btn" onclick="load()">
+        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+      </button>
+    </div>
+  </div>
 
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+    <div class="loading-state"><div class="spinner"></div><span>Memuat data...</span></div>
+  </div>
+
+</div>
+
+<script src="assets/config.js"></script>
+<script>
+  injectNavCSS();
+
+  let chartInstance = null;
+
+  async function load() {
+    const data = await fetchData("stats.json");
+    const c = document.getElementById("mainContent");
+
+    if (!data) {
+      document.getElementById("sidebarDot").className = "status-dot offline";
+      document.getElementById("sidebarStatus").textContent = "Offline";
       c.innerHTML = `
-        <div class="section-label">Overview</div>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-users"></i></div><div class="val">${formatNum(data.totalGroups)}</div><div class="lbl">Total Grup</div></div>
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-user"></i></div><div class="val">${formatNum(data.totalUsers)}</div><div class="lbl">Total User</div></div>
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-puzzle-piece"></i></div><div class="val">${data.totalFeatures}</div><div class="lbl">Total Fitur</div></div>
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-terminal"></i></div><div class="val">${formatNum(data.totalCmd)}</div><div class="lbl">Total Command</div></div>
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-message"></i></div><div class="val">${formatNum(data.totalChat)}</div><div class="lbl">Total Chat</div></div>
-          <div class="stat-card"><div class="ico"><i class="fa-solid fa-star"></i></div><div class="val">${data.ratingAvg}/10</div><div class="lbl">Rating</div></div>
-        </div>
-
-        <div class="section-label">Analytics</div>
-        <div class="two-col">
-          <div class="analytics-card">
-            <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Top Command</div>
-            ${topCmdsHtml}
-          </div>
-          <div class="analytics-card">
-            <div class="card-title"><i class="fa-solid fa-star"></i> Rating Bot</div>
-            <div class="rating-big">${data.ratingAvg}</div>
-            <div class="rating-sub">dari ${data.ratingTotal} votes</div>
-            <div class="stars">${starsHtml}</div>
-          </div>
+        <div style="text-align:center;padding:80px;color:#333">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:36px;display:block;margin-bottom:14px;color:#333"></i>
+          <p style="font-size:13px">Data belum tersedia. Bot belum push data ke GitHub.</p>
         </div>`;
+      return;
     }
 
-    load();
-    setInterval(load, 60000);
-  </script>
+    document.getElementById("sidebarDot").className = "status-dot online";
+    document.getElementById("sidebarStatus").textContent = data.botName || "Online";
+    document.getElementById("updatedBadge").textContent = "Updated: " + new Date(data.lastUpdated).toLocaleTimeString("id-ID");
+
+    const statCards = [
+      { label: "Total Grup",    val: formatNum(data.totalGroups),   sub: "Grup aktif",          color: "#4ade80", icon: "fa-users" },
+      { label: "Total User",    val: formatNum(data.totalUsers),    sub: "Terdaftar di bot",     color: "#60a5fa", icon: "fa-user" },
+      { label: "Total Fitur",   val: data.totalFeatures,            sub: "Command tersedia",     color: "#f59e0b", icon: "fa-puzzle-piece" },
+      { label: "Total Command", val: formatNum(data.totalCmd),      sub: "Dijalankan",           color: "#a78bfa", icon: "fa-terminal" },
+      { label: "Total Chat",    val: formatNum(data.totalChat),     sub: "Pesan masuk",          color: "#f472b6", icon: "fa-message" },
+      { label: "Rating",        val: data.ratingAvg + "/10",        sub: data.ratingTotal + " votes", color: "#fbbf24", icon: "fa-star" },
+    ];
+
+    const topCmds = data.topCommands || [];
+    const maxCmd = topCmds[0]?.count || 1;
+
+    const starsHtml = Array.from({length:10}, (_,i) =>
+      `<i class="fa-solid fa-star${i < Math.round(data.ratingAvg) ? " on" : ""}"></i>`
+    ).join("");
+
+    const ratingBars = [10,9,8,7,6].map(score => `
+      <div class="rating-bar-row">
+        <span class="rl">${score}</span>
+        <div class="rw"><div class="rf" style="width:${data.ratingAvg >= score ? 100 : Math.max(0,(data.ratingAvg/score)*100)}%"></div></div>
+      </div>`).join("");
+
+    const activities = [
+      { icon: "fa-chart-line", color: "#4ade80", text: `Bot aktif dengan <span>${data.totalFeatures}</span> fitur`, time: "Live" },
+      { icon: "fa-users",      color: "#60a5fa", text: `<span>${formatNum(data.totalUsers)}</span> user terdaftar`, time: "Live" },
+      { icon: "fa-terminal",   color: "#a78bfa", text: `<span>${formatNum(data.totalCmd)}</span> command dijalankan`, time: "Total" },
+      { icon: "fa-star",       color: "#fbbf24", text: `Rating bot <span>${data.ratingAvg}/10</span> dari ${data.ratingTotal} votes`, time: "All time" },
+    ];
+
+    c.innerHTML = `
+      <div class="content-header fade d1">
+        <h1>Bot <span>Dashboard</span></h1>
+        <p>Selamat datang, statistik dan analitik bot secara realtime</p>
+      </div>
+
+      <div class="stat-row">
+        ${statCards.map((s, i) => `
+          <div class="stat-card fade d${i+1}" style="--accent-color:${s.color}">
+            <div class="stat-label"><i class="fa-solid ${s.icon}" style="color:${s.color};margin-right:5px"></i>${s.label}</div>
+            <div class="stat-val">${s.val}</div>
+            <div class="stat-sub">${s.sub}</div>
+          </div>`).join("")}
+      </div>
+
+      <div class="grid-3-1 fade d4">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-area"></i> Feature Usage Analytics</div>
+            <span class="card-badge">Top 10</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap">
+              <canvas id="usageChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-star"></i> Rating Bot</div>
+          </div>
+          <div class="rating-display">
+            <div class="rating-num">${data.ratingAvg}</div>
+            <div class="rating-info">
+              <div class="rating-stars">${starsHtml}</div>
+              <div class="rating-votes">dari ${data.ratingTotal} votes</div>
+              ${ratingBars}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2 fade d5">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Top Command Dipakai</div>
+            <span class="card-badge">${topCmds.length} commands</span>
+          </div>
+          <div class="cmd-list">
+            ${topCmds.length ? topCmds.map((cmd, i) => `
+              <div class="cmd-item">
+                <span class="n">${i+1}</span>
+                <span class="name">.${esc(cmd.cmd)}</span>
+                <div class="bar-wrap"><div class="bar" style="width:${Math.round((cmd.count/maxCmd)*100)}%"></div></div>
+                <span class="cnt">${cmd.count}</span>
+              </div>`).join("")
+            : `<div style="padding:20px;color:#333;font-size:12px;text-align:center">Belum ada data</div>`}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Activity</div>
+            <span class="card-badge">Live</span>
+          </div>
+          <div class="activity-list">
+            ${activities.map(a => `
+              <div class="activity-item">
+                <div class="activity-icon"><i class="fa-solid ${a.icon}" style="color:${a.color}"></i></div>
+                <div class="activity-text">${a.text}</div>
+                <div class="activity-time">${a.time}</div>
+              </div>`).join("")}
+          </div>
+        </div>
+      </div>`;
+
+    // Chart
+    if (chartInstance) chartInstance.destroy();
+    const chartCtx = document.getElementById("usageChart");
+    if (chartCtx && topCmds.length) {
+      chartInstance = new Chart(chartCtx, {
+        type: "line",
+        data: {
+          labels: topCmds.map(c => "." + c.cmd),
+          datasets: [{
+            label: "Penggunaan",
+            data: topCmds.map(c => c.count),
+            borderColor: "#4ade80",
+            backgroundColor: "rgba(74,222,128,0.08)",
+            borderWidth: 2,
+            pointBackgroundColor: "#4ade80",
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#1a1a1a",
+              borderColor: "#262626",
+              borderWidth: 1,
+              titleColor: "#fff",
+              bodyColor: "#888",
+              padding: 10,
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: "#1a1a1a" },
+              ticks: { color: "#444", font: { family: "Fira Code", size: 10 } }
+            },
+            y: {
+              grid: { color: "#1a1a1a" },
+              ticks: { color: "#444", font: { family: "Fira Code", size: 10 } }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  load();
+  setInterval(load, 60000);
+</script>
 </body>
 </html>
