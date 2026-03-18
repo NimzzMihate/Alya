@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Links — Nimzz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#666; --accent:#4ade80; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 50px 50px;
+      color: var(--text-main); font-family: 'Inter',sans-serif;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+    .fade-up { opacity:0; animation: fadeUp 0.5s ease forwards; }
+    .fade-up.d1 { animation-delay:0.05s; } .fade-up.d2 { animation-delay:0.12s; }
+    .fade-up.d3 { animation-delay:0.18s; } .fade-up.d4 { animation-delay:0.24s; }
+    .fade-up.d5 { animation-delay:0.30s; } .fade-up.d6 { animation-delay:0.36s; }
+    .fade-up.d7 { animation-delay:0.42s; }
+
+    .reveal { opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    /* BANNER */
+    .banner {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      position: relative;
+    }
+
+    .banner-overlay {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner-overlay img {
+      width: 100%; height: 200px;
+      object-fit: cover; display: block;
+      filter: brightness(0.6);
+    }
+
+    .banner-overlay::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 100px;
+      background: linear-gradient(transparent, var(--bg));
+    }
+
+    /* CONTAINER */
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* PROFILE */
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: -50px;
+      padding-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .avatar-wrap {
+      position: relative;
+      margin-bottom: 14px;
+      animation: float 4s ease infinite;
+    }
+
+    .avatar {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--border);
+      display: block;
+    }
+
+    .avatar-online {
+      position: absolute;
+      bottom: 4px; right: 4px;
+      width: 14px; height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      animation: pulse 2s ease infinite;
+    }
+
+    .profile-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .profile-username {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .profile-bio {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      max-width: 360px;
+      margin-bottom: 16px;
+    }
+
+    .profile-tags { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+
+    .profile-tag {
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: #161616;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* LINKS */
+    .links-section { padding-bottom: 24px; }
+
+    .links-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: border-color 0.2s, transform 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--link-color, var(--accent));
+      border-radius: 12px 0 0 12px;
+      opacity: 0.8;
+    }
+
+    .link-card:hover {
+      border-color: #2a2a2a;
+      transform: translateX(4px);
+      background: #1a1a1a;
+    }
+
+    .link-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      background: var(--link-bg, #1a1a1a);
+      color: var(--link-color, var(--accent));
+      border: 1px solid var(--border);
+    }
+
+    .link-text { flex: 1; }
+    .link-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .link-desc { font-size: 11px; color: var(--text-dim); }
+    .link-arrow { font-size: 11px; color: #333; transition: color 0.2s, transform 0.2s; }
+    .link-card:hover .link-arrow { color: var(--link-color, var(--accent)); transform: translateX(3px); }
+
+    /* STATS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover { border-color: #2a2a2a; }
+    .stat-card .sv { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 3px; font-family: 'Fira Code', monospace; }
+    .stat-card .sl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+
+    .bottom-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .bottom-nav-link:hover { background: #1a1a1a; color: var(--text-main); }
+    .bottom-nav-link.active { background: #1e1e1e; color: var(--text-main); }
+    .bottom-nav-link i { font-size: 11px; }
+
+    @media (max-width:600px) {
+      .container { padding: 0 16px; }
+      .bottom-nav { gap: 4px; padding: 8px 12px; }
+      .bottom-nav-link span { display: none; }
+      .bottom-nav-link { padding: 8px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <!-- BANNER -->
+  <div class="banner-overlay">
+    <img src="https://files.catbox.moe/z9qwa9.jpg" alt="banner"/>
+  </div>
+
+  <div class="container">
+
+    <!-- PROFILE -->
+    <div class="profile">
+      <div class="avatar-wrap fade-up d1">
+        <img src="https://files.catbox.moe/6ntmyb.jpg" class="avatar" alt="Nimzz"/>
+        <div class="avatar-online"></div>
+      </div>
+      <div class="profile-name fade-up d2">Nimzz</div>
+      <div class="profile-username fade-up d2">@NimzzMihate</div>
+      <div class="profile-bio fade-up d3">WhatsApp Bot Developer · JavaScript & Node.js enthusiast · Open Source</div>
+      <div class="profile-tags fade-up d4">
+        <span class="profile-tag">Bot Dev</span>
+        <span class="profile-tag">JS</span>
+        <span class="profile-tag">Node.js</span>
+        <span class="profile-tag">Open Source</span>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row fade-up d4" id="statsRow">
+      <div class="stat-card"><div class="sv" id="repoCount">-</div><div class="sl">Repos</div></div>
+      <div class="stat-card"><div class="sv" id="followersCount">-</div><div class="sl">Followers</div></div>
+      <div class="stat-card"><div class="sv" id="starsCount">-</div><div class="sl">Stars</div></div>
+    </div>
+
+    <!-- LINKS -->
+    <div class="links-section">
+      <div class="links-label fade-up d5">My Links</div>
+
+      <a href="https://whatsapp.com/channel/0029VbBhZWdGJP8HlbGaE63Q" target="_blank" class="link-card fade-up d5" style="--link-color:#25d366;--link-bg:#0f1f15">
+        <div class="link-icon"><i class="fa-brands fa-whatsapp"></i></div>
+        <div class="link-text">
+          <div class="link-title">WhatsApp Channel</div>
+          <div class="link-desc">Follow channel WhatsApp ku</div>
+        </div>
+        <i class="fa-solid fa-chevron-right link-arrow"></i>
+      </a>
+
+      <a href="https://t.me/Nimzz4" target="_blank" class="link-card fade-up d5" style="--link-color:#29b6f6;--link-bg:#0a1929">
+        <div class="link-icon"><i class="fa-brands fa-telegram"></i></div>
+        <div class="link-text">
+          <div class="link-title">Telegram</div>
+          <div class="link-desc">@Nimzz4</div>
+        </div>
+        <i class="fa-solid fa-chevron-right link-arrow"></i>
+      </a>
+
+      <a href="https://github.com/NimzzMihate" target="_blank" class="link-card fade-up d6" style="--link-color:#e2e8f0;--link-bg:#1a1a1a">
+        <div class="link-icon"><i class="fa-brands fa-github"></i></div>
+        <div class="link-text">
+          <div class="link-title">GitHub</div>
+          <div class="link-desc">NimzzMihate — lihat semua project</div>
+        </div>
+        <i class="fa-solid fa-chevron-right link-arrow"></i>
+      </a>
+
+      <a href="https://www.tiktok.com/@nq8003" target="_blank" class="link-card fade-up d6" style="--link-color:#ff0050;--link-bg:#1f0a0f">
+        <div class="link-icon"><i class="fa-brands fa-tiktok"></i></div>
+        <div class="link-text">
+          <div class="link-title">TikTok</div>
+          <div class="link-desc">@nq8003</div>
+        </div>
+        <i class="fa-solid fa-chevron-right link-arrow"></i>
+      </a>
+
+      <a href="portfolio.html" class="link-card fade-up d7" style="--link-color:#4ade80;--link-bg:#0f1f0f">
+        <div class="link-icon"><i class="fa-solid fa-user"></i></div>
+        <div class="link-text">
+          <div class="link-title">Portfolio</div>
+          <div class="link-desc">Lihat project & skill lengkap</div>
+        </div>
+        <i class="fa-solid fa-chevron-right link-arrow"></i>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-link"><i class="fa-solid fa-house"></i><span>Home</span></a>
+    <a href="status.html" class="bottom-nav-link"><i class="fa-solid fa-signal"></i><span>Status</span></a>
+    <a href="dashboard.html" class="bottom-nav-link"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+    <a href="commands.html" class="bottom-nav-link"><i class="fa-solid fa-terminal"></i><span>Commands</span></a>
+    <a href="leaderboard.html" class="bottom-nav-link"><i class="fa-solid fa-trophy"></i><span>Leaderboard</span></a>
+    <a href="snippets.html" class="bottom-nav-link"><i class="fa-solid fa-code"></i><span>Snippets</span></a>
+    <a href="portfolio.html" class="bottom-nav-link"><i class="fa-solid fa-user"></i><span>Portfolio</span></a>
+    <a href="linktree.html" class="bottom-nav-link active"><i class="fa-solid fa-link"></i><span>Links</span></a>
+  </nav>
+
+  <script src="assets/config.js"></script>
+  <script>
+    injectNavCSS();
+    renderNav();
+
+    // Load GitHub stats
+    async function loadGithubStats() {
+      try {
+        const res = await fetch("https://api.github.com/users/NimzzMihate");
+        const data = await res.json();
+        document.getElementById("repoCount").textContent = data.public_repos || "-";
+        document.getElementById("followersCount").textContent = data.followers || "-";
+
+        const repos = await fetch("https://api.github.com/users/NimzzMihate/repos?per_page=100").then(r => r.json());
+        const stars = Array.isArray(repos) ? repos.reduce((a, r) => a + r.stargazers_count, 0) : 0;
+        document.getElementById("starsCount").textContent = stars;
+      } catch (e) {
+        console.log("GitHub stats gagal:", e.message);
+      }
+    }
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+
+    loadGithubStats();
+  </script>
+</body>
+</html>
