@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Alya MD</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 50px 50px;
+      color: var(--text-main); font-family: 'Inter',sans-serif;
+      min-height: 100vh; padding-bottom: 80px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+    .page-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 6px; }
+    .page-title span { color: var(--accent); }
+    .page-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 36px; }
+    .section-label {
+      font-size: 11px; font-weight: 600; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin-bottom:36px; }
+    .stat-card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:16px; transition:border-color 0.2s,transform 0.2s;
+    }
+    .stat-card:hover { border-color:#333; transform:translateY(-2px); }
+    .stat-card .ico { font-size:13px; color:var(--text-dim); margin-bottom:10px; }
+    .stat-card .val { font-size:22px; font-weight:800; letter-spacing:-0.5px; margin-bottom:3px; }
+    .stat-card .lbl { font-size:11px; color:var(--text-dim); }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:36px; }
+    .analytics-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; }
+    .card-title { font-size:11px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .cmd-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #1a1a1a; font-size:12px; }
+    .cmd-row:last-child { border-bottom:none; }
+    .cmd-row .rank { font-size:10px; color:#333; font-family:'Fira Code',monospace; width:20px; flex-shrink:0; }
+    .cmd-row .name { font-family:'Fira Code',monospace; color:var(--accent); flex:1; }
+    .cmd-row .bar-wrap { flex:1; height:4px; background:#1e1e1e; border-radius:2px; overflow:hidden; }
+    .cmd-row .bar { height:100%; background:var(--accent); opacity:0.6; border-radius:2px; }
+    .cmd-row .count { font-family:'Fira Code',monospace; font-size:11px; color:var(--text-dim); width:40px; text-align:right; }
+    .rating-big { font-size:52px; font-weight:800; letter-spacing:-3px; margin-bottom:4px; }
+    .rating-sub { font-size:12px; color:var(--text-dim); margin-bottom:14px; }
+    .stars { display:flex; gap:4px; margin-bottom:14px; }
+    .stars i { font-size:12px; color:#333; }
+    .stars i.on { color:#fbbf24; }
+    .loading-state { display:flex; align-items:center; justify-content:center; gap:12px; padding:80px; color:#333; font-size:13px; }
+    .spinner { width:18px; height:18px; border:2px solid #222; border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @media (max-width:700px) { .two-col { grid-template-columns:1fr; } .container { padding:24px 16px; } }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+  <div class="container">
+    <div class="page-title">Bot <span>Dashboard</span></div>
+    <div class="page-sub">Statistik dan analitik bot secara realtime</div>
+    <div id="mainContainer">
+      <div class="loading-state"><div class="spinner"></div><span>Memuat data...</span></div>
+    </div>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script>
+    injectNavCSS();
+    renderNav();
+
+    async function load() {
+      const data = await fetchData("stats.json");
+      const c = document.getElementById("mainContainer");
+      if (!data) {
+        c.innerHTML = `<div style="text-align:center;padding:80px;color:#333"><i class="fa-solid fa-triangle-exclamation" style="font-size:36px;display:block;margin-bottom:14px"></i><p style="font-size:13px">Data belum tersedia. Bot belum push data ke GitHub.</p></div>`;
+        return;
+      }
+
+      setLastUpdated(data.lastUpdated);
+
+      const topCmdsHtml = (data.topCommands || []).length
+        ? data.topCommands.map((c, i) => {
+            const max = data.topCommands[0].count;
+            return `<div class="cmd-row"><span class="rank">${i+1}</span><span class="name">.${esc(c.cmd)}</span><div class="bar-wrap"><div class="bar" style="width:${Math.round((c.count/max)*100)}%"></div></div><span class="count">${c.count}</span></div>`;
+          }).join("")
+        : `<div style="color:#333;font-size:12px;padding:16px 0">Belum ada data command</div>`;
+
+      const starsHtml = Array.from({length:10}, (_,i) =>
+        `<i class="fa-solid fa-star${i < Math.round(data.ratingAvg) ? " on" : ""}"></i>`
+      ).join("");
+
+      c.innerHTML = `
+        <div class="section-label">Overview</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-users"></i></div><div class="val">${formatNum(data.totalGroups)}</div><div class="lbl">Total Grup</div></div>
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-user"></i></div><div class="val">${formatNum(data.totalUsers)}</div><div class="lbl">Total User</div></div>
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-puzzle-piece"></i></div><div class="val">${data.totalFeatures}</div><div class="lbl">Total Fitur</div></div>
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-terminal"></i></div><div class="val">${formatNum(data.totalCmd)}</div><div class="lbl">Total Command</div></div>
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-message"></i></div><div class="val">${formatNum(data.totalChat)}</div><div class="lbl">Total Chat</div></div>
+          <div class="stat-card"><div class="ico"><i class="fa-solid fa-star"></i></div><div class="val">${data.ratingAvg}/10</div><div class="lbl">Rating</div></div>
+        </div>
+
+        <div class="section-label">Analytics</div>
+        <div class="two-col">
+          <div class="analytics-card">
+            <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Top Command</div>
+            ${topCmdsHtml}
+          </div>
+          <div class="analytics-card">
+            <div class="card-title"><i class="fa-solid fa-star"></i> Rating Bot</div>
+            <div class="rating-big">${data.ratingAvg}</div>
+            <div class="rating-sub">dari ${data.ratingTotal} votes</div>
+            <div class="stars">${starsHtml}</div>
+          </div>
+        </div>`;
+    }
+
+    load();
+    setInterval(load, 60000);
+  </script>
+</body>
+</html>
