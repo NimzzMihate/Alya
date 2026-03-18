@@ -206,7 +206,7 @@
   <div id="navbar"></div>
   <div class="container">
     <div class="page-title fade-up d1"><span>Feedback</span></div>
-    <div class="page-sub fade-up d2">Saran, request fitur, atau kirim pesan langsung ke owner</div>
+    <div class="page-sub fade-up d2">Saran, request fitur, atau kirim pesan langsung ke developer</div>
 
     <div class="section-label reveal">Tipe Pesan</div>
     <div class="type-tabs reveal">
@@ -254,17 +254,17 @@
     <div class="section-label reveal">Info</div>
     <div class="info-grid reveal">
       <div class="info-card">
-        <div class="ico">⚡</div>
+        <div class="ico"><i class="fa-solid fa-bolt" style="color:#f59e0b"></i></div>
         <h3>Langsung Terkirim</h3>
         <p>Pesanmu langsung masuk ke grup developer via WhatsApp bot.</p>
       </div>
       <div class="info-card">
-        <div class="ico">🔒</div>
+        <div class="ico"><i class="fa-solid fa-lock" style="color:#60a5fa"></i></div>
         <h3>Anonim OK</h3>
         <p>Nama yang kamu isi hanya untuk identitas, tidak ada verifikasi.</p>
       </div>
       <div class="info-card">
-        <div class="ico">📋</div>
+        <div class="ico"><i class="fa-solid fa-clipboard-list" style="color:#a78bfa"></i></div>
         <h3>Semua Dibaca</h3>
         <p>Setiap feedback akan dibaca dan dipertimbangkan oleh developer.</p>
       </div>
@@ -347,7 +347,7 @@
       btn.innerHTML = '<div class="spinner"></div> Menyiapkan...';
 
       try {
-        const typeEmoji = { saran:"💡", request:"✨", pesan:"📩", bug:"🐛" };
+        const typeEmoji = { saran:"[Saran]", request:"[Request]", pesan:"[Pesan]", bug:"[Bug]" };
 
         // Simpan ke localStorage
         const recents = JSON.parse(localStorage.getItem("feedbacks") || "[]");
