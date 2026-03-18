@@ -24,7 +24,7 @@
     .section-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
     .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
     .type-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-    .type-tab { display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+    .type-tab { display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
     .type-tab:hover { color: var(--text-main); }
     .type-tab.active { border-color: var(--tab-color, var(--accent)); color: var(--tab-color, var(--accent)); background: var(--hover-bg); }
     .type-tab i { font-size: 11px; }
@@ -44,10 +44,13 @@
     .char-count { text-align: right; font-size: 11px; color: var(--text-dim); margin-top: 4px; font-family: 'Fira Code', monospace; }
     .char-count.warn { color: #f59e0b; }
     .char-count.over { color: #ef4444; }
-    .submit-btn { width: 100%; background: var(--accent); color: #000; border: none; border-radius: 9px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: opacity 0.2s, transform 0.2s; font-family: 'Inter', sans-serif; }
+    .submit-btn { width: 100%; background: var(--accent); color: #000; border: none; border-radius: 9px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: opacity 0.2s, transform 0.2s; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     .submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .wa-btn { display: none; width: 100%; background: #25d366; color: #000; border: none; border-radius: 9px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; gap: 9px; text-decoration: none; margin-top: 10px; transition: opacity 0.2s, transform 0.2s; -webkit-tap-highlight-color: transparent; }
+    .wa-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .wa-btn.show { display: flex; animation: fadeUp 0.3s ease; }
+    .wa-hint { display: none; font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+    .wa-hint.show { display: block; }
     .alert { padding: 12px 16px; border-radius: 9px; font-size: 13px; margin-bottom: 16px; display: none; align-items: center; gap: 10px; }
     .alert.success { background: #0f1f0f; border: 1px solid #1a3a1a; color: var(--accent); display: flex; }
     .alert.error { background: #1f0f0f; border: 1px solid #3a1a1a; color: #f87171; display: flex; }
@@ -100,7 +103,7 @@
         <i class="fa-solid fa-paper-plane"></i>
         <div>
           <div class="title">Kirim <span id="typeLabel">Saran</span></div>
-          <div class="subtitle">Pesanmu akan diteruskan ke developer otomatis via bot</div>
+          <div class="subtitle">Pesanmu akan diteruskan ke developer via WhatsApp</div>
         </div>
       </div>
       <div class="form-body">
@@ -113,9 +116,15 @@
           <textarea class="form-textarea" id="msgInput" placeholder="Tulis saranmu di sini..." maxlength="1000" oninput="updateCharCount()"></textarea>
           <div class="char-count" id="charCount">0 / 1000</div>
         </div>
-        <button class="submit-btn" id="submitBtn" onclick="submitFeedback()">
+        <button class="submit-btn" onclick="submitFeedback()">
           <i class="fa-solid fa-paper-plane"></i> Kirim ke Developer
         </button>
+        <a class="wa-btn" id="waBtn" href="#" target="_blank">
+          <i class="fa-brands fa-whatsapp"></i> Buka WhatsApp & Kirim
+        </a>
+        <div class="wa-hint" id="waHint">
+          <i class="fa-solid fa-circle-info"></i> WhatsApp akan terbuka, tinggal tekan tombol kirim
+        </div>
       </div>
     </div>
 
@@ -124,7 +133,7 @@
       <div class="info-card">
         <div class="ico"><i class="fa-solid fa-bolt" style="color:#f59e0b"></i></div>
         <h3>Langsung Terkirim</h3>
-        <p>Pesanmu langsung masuk ke developer via bot otomatis.</p>
+        <p>Pesanmu langsung masuk ke developer via bot WhatsApp.</p>
       </div>
       <div class="info-card">
         <div class="ico"><i class="fa-solid fa-lock" style="color:#60a5fa"></i></div>
@@ -169,9 +178,7 @@
     injectNavCSS();
     renderNav();
 
-    // Ganti dengan Fine-grained GitHub token kamu
-    // (hanya bisa write ke repo alya-data saja)
-    const GH_TOKEN = "GANTI_TOKEN_DISINI";
+    const BOT_NUMBER = "6281915895220";
 
     let currentType = "saran";
     const typeLabels = { saran:"Saran", request:"Request Fitur", pesan:"Pesan", bug:"Laporan Bug" };
@@ -189,6 +196,8 @@
       document.getElementById("typeLabel").textContent = typeLabels[type];
       document.getElementById("msgLabel").childNodes[0].textContent = typeLabels[type] + " ";
       document.getElementById("msgInput").placeholder = typePlaceholders[type];
+      document.getElementById("waBtn").classList.remove("show");
+      document.getElementById("waHint").classList.remove("show");
     }
 
     function updateCharCount() {
@@ -202,48 +211,10 @@
       const el = document.getElementById("alertBox");
       el.className = `alert ${type}`;
       el.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'circle-xmark'}"></i> ${msg}`;
-      setTimeout(() => { el.className = "alert"; el.style.display = "none"; }, 5000);
+      setTimeout(() => { el.className = "alert"; }, 5000);
     }
 
-    async function pushFeedbackToGithub(entry) {
-      const repoFull = `${GITHUB_USER}/${GITHUB_REPO}`;
-      const filename = "feedback.json";
-      const headers = {
-        Authorization: `token ${GH_TOKEN}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      };
-
-      let existing = [];
-      let sha = null;
-      try {
-        const res = await fetch(`https://api.github.com/repos/${repoFull}/contents/${filename}`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          sha = data.sha;
-          existing = JSON.parse(atob(data.content.replace(/\n/g, ""))) || [];
-        }
-      } catch (e) {}
-
-      existing.unshift(entry);
-      if (existing.length > 50) existing.pop();
-
-      const body = {
-        message: `feedback: ${entry.type} dari ${entry.name}`,
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(existing, null, 2)))),
-        ...(sha ? { sha } : {})
-      };
-
-      const pushRes = await fetch(
-        `https://api.github.com/repos/${repoFull}/contents/${filename}`,
-        { method: "PUT", headers, body: JSON.stringify(body) }
-      );
-
-      if (!pushRes.ok) throw new Error("Gagal push ke GitHub");
-      return true;
-    }
-
-    async function submitFeedback() {
+    function submitFeedback() {
       const name = document.getElementById("senderName").value.trim();
       const msg = document.getElementById("msgInput").value.trim();
 
@@ -251,40 +222,20 @@
       if (!msg) { showAlert("Pesan tidak boleh kosong!", "error"); return; }
       if (msg.length < 5) { showAlert("Pesan terlalu pendek!", "error"); return; }
 
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
-      btn.innerHTML = '<div class="spinner"></div> Mengirim...';
+      const waText = `.webfeedback ${currentType}|${name}|${msg}`;
+      const waBtn = document.getElementById("waBtn");
+      waBtn.href = `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent(waText)}`;
+      waBtn.classList.add("show");
+      document.getElementById("waHint").classList.add("show");
 
-      try {
-        const entry = {
-          id: Math.random().toString(36).slice(2, 8),
-          type: currentType,
-          name,
-          message: msg,
-          timestamp: Date.now(),
-          sent: false
-        };
+      // Simpan ke recent
+      const recents = JSON.parse(localStorage.getItem("feedbacks") || "[]");
+      recents.unshift({ type: currentType, name, message: msg, time: new Date().toLocaleString("id-ID") });
+      if (recents.length > 10) recents.pop();
+      localStorage.setItem("feedbacks", JSON.stringify(recents));
+      updateRecentList(recents);
 
-        await pushFeedbackToGithub(entry);
-
-        const recents = JSON.parse(localStorage.getItem("feedbacks") || "[]");
-        recents.unshift({ ...entry, time: new Date().toLocaleString("id-ID") });
-        if (recents.length > 10) recents.pop();
-        localStorage.setItem("feedbacks", JSON.stringify(recents));
-        updateRecentList(recents);
-
-        showAlert(`${typeLabels[currentType]} berhasil dikirim! Bot akan meneruskan ke developer otomatis.`, "success");
-        document.getElementById("senderName").value = "";
-        document.getElementById("msgInput").value = "";
-        updateCharCount();
-
-      } catch (e) {
-        showAlert("Gagal mengirim, coba lagi!", "error");
-        console.error(e);
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim ke Developer';
+      showAlert(`${typeLabels[currentType]} siap! Klik tombol WhatsApp hijau di bawah.`, "success");
     }
 
     function updateRecentList(recents) {
