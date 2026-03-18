@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio — Nimzz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#666; --accent:#4ade80; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size: 50px 50px;
+      color: var(--text-main); font-family: 'Inter',sans-serif;
+      min-height: 100vh; padding-bottom: 100px;
+    }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-8px); } }
+    @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+
+    .fade-up { opacity:0; animation: fadeUp 0.5s ease forwards; }
+    .fade-up.d1 { animation-delay:0.05s; } .fade-up.d2 { animation-delay:0.12s; }
+    .fade-up.d3 { animation-delay:0.18s; } .fade-up.d4 { animation-delay:0.24s; }
+    .reveal { opacity:0; transform:translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAVBAR */
+    #navbar { position: sticky; top: 0; z-index: 200; }
+
+    /* HERO */
+    .hero {
+      padding: 80px 0 60px;
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .hero-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+      animation: float 4s ease infinite;
+    }
+
+    .hero-avatar {
+      width: 120px; height: 120px;
+      border-radius: 24px;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      display: block;
+      transition: border-color 0.3s;
+    }
+
+    .hero-avatar:hover { border-color: var(--accent); }
+
+    .hero-avatar-badge {
+      position: absolute;
+      bottom: -8px; right: -8px;
+      background: var(--accent);
+      color: #000;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 10px;
+      border: 2px solid var(--bg);
+    }
+
+    .hero-text { flex: 1; min-width: 0; }
+
+    .hero-greeting {
+      font-size: 12px;
+      color: var(--accent);
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 8px;
+    }
+
+    .hero-name {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+
+    .hero-name span { color: var(--accent); }
+
+    .hero-bio {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 20px;
+    }
+
+    .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .hero-tag {
+      background: #161616;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* SECTION */
+    .section { padding: 0 0 48px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 600; color: #444;
+      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:#1e1e1e; }
+
+    /* SKILLS */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+
+    .skill-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .skill-card:hover { border-color: #2a2a2a; transform: translateY(-2px); }
+
+    .skill-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .skill-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .skill-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .skill-pct {
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      color: var(--accent);
+    }
+
+    .skill-bar-bg {
+      height: 5px;
+      background: #1e1e1e;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .skill-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      width: 0;
+      transition: width 1s ease;
+    }
+
+    /* PROJECTS */
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .project-card:hover { border-color: #2a2a2a; transform: translateY(-3px); }
+
+    .project-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .project-icon {
+      width: 36px; height: 36px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .project-link-icon { font-size: 12px; color: #333; transition: color 0.2s; }
+    .project-card:hover .project-link-icon { color: var(--accent); }
+
+    .project-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .project-desc { font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 12px; }
+
+    .project-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .project-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      color: #555;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .project-stars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #555;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .project-stars i { font-size: 10px; color: #fbbf24; }
+
+    /* LOADING SKELETON */
+    .skeleton-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      height: 140px;
+    }
+
+    .skel {
+      border-radius: 4px;
+      background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      margin-bottom: 8px;
+    }
+
+    /* NAV BOTTOM */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+
+    .bottom-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .bottom-nav-link:hover { background: #1a1a1a; color: var(--text-main); }
+    .bottom-nav-link.active { background: #1e1e1e; color: var(--text-main); }
+    .bottom-nav-link i { font-size: 11px; }
+
+    @media (max-width:600px) {
+      .hero { padding: 40px 0 32px; gap: 24px; }
+      .hero-name { font-size: 2rem; }
+      .container { padding: 0 16px; }
+      .bottom-nav { gap: 4px; padding: 8px 12px; }
+      .bottom-nav-link span { display: none; }
+      .bottom-nav-link { padding: 8px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="container">
+    <div class="hero">
+      <div class="hero-avatar-wrap fade-up d1">
+        <img src="https://files.catbox.moe/6ntmyb.jpg" class="hero-avatar" alt="Nimzz"/>
+        <div class="hero-avatar-badge">DEV</div>
+      </div>
+      <div class="hero-text">
+        <div class="hero-greeting fade-up d1">// hello world</div>
+        <div class="hero-name fade-up d2">Hi, I'm <span>Nimzz</span></div>
+        <div class="hero-bio fade-up d3">WhatsApp Bot Developer & JavaScript enthusiast. Membangun tools dan bot yang berguna untuk sehari-hari.</div>
+        <div class="hero-tags fade-up d4">
+          <span class="hero-tag">Bot Developer</span>
+          <span class="hero-tag">JavaScript</span>
+          <span class="hero-tag">Node.js</span>
+          <span class="hero-tag">Open Source</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label reveal">Skills</div>
+      <div class="skills-grid reveal">
+        <div class="skill-card">
+          <div class="skill-header">
+            <div class="skill-name">
+              <div class="skill-icon" style="background:#1a1f2e;color:#60a5fa">JS</div>
+              JavaScript
+            </div>
+            <span class="skill-pct">45%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" style="background:linear-gradient(90deg,#f7df1e,#f59e0b)" data-pct="45"></div></div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-header">
+            <div class="skill-name">
+              <div class="skill-icon" style="background:#1a2e1a;color:#4ade80">Py</div>
+              Python
+            </div>
+            <span class="skill-pct">40%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" style="background:linear-gradient(90deg,#4ade80,#22c55e)" data-pct="40"></div></div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-header">
+            <div class="skill-name">
+              <div class="skill-icon" style="background:#1a1a2e;color:#818cf8">CSS</div>
+              CSS
+            </div>
+            <span class="skill-pct">67%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" style="background:linear-gradient(90deg,#818cf8,#6366f1)" data-pct="67"></div></div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-header">
+            <div class="skill-name">
+              <div class="skill-icon" style="background:#1a2a1a;color:#4ade80">NJ</div>
+              Node.js
+            </div>
+            <span class="skill-pct">66%</span>
+          </div>
+          <div class="skill-bar-bg"><div class="skill-bar-fill" style="background:linear-gradient(90deg,#4ade80,#16a34a)" data-pct="66"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label reveal">Projects dari GitHub</div>
+      <div class="projects-grid" id="projectsGrid">
+        ${Array(6).fill(0).map(() => `<div class="skeleton-card"><div class="skel" style="height:14px;width:60%;margin-bottom:10px"></div><div class="skel" style="height:10px;width:90%"></div><div class="skel" style="height:10px;width:75%"></div></div>`).join("")}
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-link"><i class="fa-solid fa-house"></i><span>Home</span></a>
+    <a href="status.html" class="bottom-nav-link"><i class="fa-solid fa-signal"></i><span>Status</span></a>
+    <a href="dashboard.html" class="bottom-nav-link"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+    <a href="commands.html" class="bottom-nav-link"><i class="fa-solid fa-terminal"></i><span>Commands</span></a>
+    <a href="leaderboard.html" class="bottom-nav-link"><i class="fa-solid fa-trophy"></i><span>Leaderboard</span></a>
+    <a href="snippets.html" class="bottom-nav-link"><i class="fa-solid fa-code"></i><span>Snippets</span></a>
+    <a href="portfolio.html" class="bottom-nav-link active"><i class="fa-solid fa-user"></i><span>Portfolio</span></a>
+    <a href="linktree.html" class="bottom-nav-link"><i class="fa-solid fa-link"></i><span>Links</span></a>
+  </nav>
+
+  <script src="assets/config.js"></script>
+  <script>
+    injectNavCSS();
+    renderNav();
+
+    // Animate skill bars
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add("visible");
+          e.target.querySelectorAll(".skill-bar-fill").forEach(bar => {
+            bar.style.width = bar.dataset.pct + "%";
+          });
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+
+    // Fetch GitHub repos
+    async function loadRepos() {
+      try {
+        const res = await fetch("https://api.github.com/users/NimzzMihate/repos?sort=updated&per_page=9");
+        const repos = await res.json();
+        if (!Array.isArray(repos)) throw new Error("Rate limited");
+
+        const grid = document.getElementById("projectsGrid");
+        if (!repos.length) {
+          grid.innerHTML = `<div style="color:#333;font-size:13px;padding:20px 0">Belum ada repo publik</div>`;
+          return;
+        }
+
+        const icons = ["fa-box", "fa-cube", "fa-robot", "fa-code", "fa-terminal", "fa-gear", "fa-bolt", "fa-star", "fa-rocket"];
+
+        grid.innerHTML = repos.map((repo, i) => `
+          <a href="${repo.html_url}" target="_blank" class="project-card reveal">
+            <div class="project-card-header">
+              <div class="project-icon"><i class="fa-solid ${icons[i % icons.length]}"></i></div>
+              <i class="fa-solid fa-arrow-up-right-from-square project-link-icon"></i>
+            </div>
+            <div class="project-name">${esc(repo.name)}</div>
+            <div class="project-desc">${esc(repo.description || "No description")}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div class="project-tags">
+                ${repo.language ? `<span class="project-tag">${esc(repo.language)}</span>` : ""}
+                ${repo.topics?.slice(0,2).map(t => `<span class="project-tag">${esc(t)}</span>`).join("") || ""}
+              </div>
+              <div class="project-stars"><i class="fa-solid fa-star"></i> ${repo.stargazers_count}</div>
+            </div>
+          </a>`).join("");
+
+        const projObs = new IntersectionObserver((entries) => {
+          entries.forEach((e, i) => {
+            if (e.isIntersecting) {
+              setTimeout(() => e.target.classList.add("visible"), i * 60);
+              projObs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.05 });
+        document.querySelectorAll(".project-card.reveal").forEach(el => projObs.observe(el));
+
+      } catch (e) {
+        document.getElementById("projectsGrid").innerHTML = `
+          <div style="color:#333;font-size:13px;padding:20px 0">
+            <i class="fa-solid fa-triangle-exclamation" style="margin-right:8px"></i>
+            Gagal load repos dari GitHub
+          </div>`;
+      }
+    }
+
+    function esc(s) { return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+    loadRepos();
+  </script>
+</body>
+</html>
