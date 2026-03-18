@@ -100,8 +100,11 @@
     }
 
     .podium-val {
-      font-size: 13px; font-weight: 800;
+      font-size: 11px; font-weight: 800;
       font-family: 'Fira Code', monospace;
+      white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; display: block;
+      text-align: center; max-width: 100%;
     }
 
     .podium-item.rank-1 .podium-val { color: #fbbf24; }
