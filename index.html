@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
-    [data-theme="light"] { --bg:#f5f5f5; --card:#fff; --border:#e0e0e0; --text-main:#111; --text-dim:#444; --accent:#16a34a; }
+    :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#aaaaaa; --accent:#4ade80; }
+    
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       background: var(--bg);
@@ -44,7 +44,7 @@
       text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
       transition: border-color 0.2s;
     }
-    .btn-secondary:hover { border-color: #444; }
+    .btn-secondary:hover { border-color: #aaaaaa; }
     .stats-bar {
       display: grid; grid-template-columns: repeat(4,1fr);
       gap: 1px; background: var(--border);
@@ -71,7 +71,7 @@
       border-radius: 12px; padding: 22px;
       transition: border-color 0.2s, transform 0.2s;
     }
-    .feature-card:hover { border-color: #333; transform: translateY(-3px); }
+    .feature-card:hover { border-color: #444444; transform: translateY(-3px); }
     .feature-card .icon {
       background: #1f1f1f; border: 1px solid #2a2a2a;
       border-radius: 10px; width: 40px; height: 40px;
@@ -99,8 +99,8 @@
     .dot-r { background:#ff5f56; } .dot-y { background:#ffbd2e; } .dot-g { background:#27c93f; }
     .terminal-title { font-family:'Fira Code',monospace; font-size:11px; color:#444; margin-left:6px; }
     .terminal-body { padding: 18px 22px; font-family:'Fira Code',monospace; font-size:13px; line-height:2; }
-    .t-p { color: var(--accent); } .t-c { color: #ccc; } .t-o { color: #555; } .t-s { color: var(--accent); }
-    footer { border-top: 1px solid var(--border); padding: 28px 0; text-align: center; font-size: 12px; color: #444; }
+    .t-p { color: var(--accent); } .t-c { color: #ccc; } .t-o { color: #aaaaaa; } .t-s { color: var(--accent); }
+    footer { border-top: 1px solid var(--border); padding: 28px 0; text-align: center; font-size: 12px; color: #aaaaaa; }
     @media (max-width:700px) {
       .hero h1 { font-size: 2.4rem; letter-spacing: -2px; }
       .stats-bar { grid-template-columns: repeat(2,1fr); }
@@ -158,7 +158,7 @@
         <div><span class="t-p">user@wa:~$</span> <span class="t-c">.adventure dragons peak</span></div>
         <div class="t-s">VICTORY! Kayu x12, Besi x8, Rank +45</div>
         <div><span class="t-p">user@wa:~$</span> <span class="t-c">.snippet save Fungsi Debounce</span></div>
-        <div class="t-s">✅ Snippet tersimpan! ID: abc123</div>
+        <div class="t-s">Snippet tersimpan! ID: abc123</div>
         <div><span class="t-p">user@wa:~$</span> <span class="t-c">_</span></div>
       </div>
     </div>
