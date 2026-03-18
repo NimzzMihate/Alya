@@ -9,6 +9,7 @@
   <style>
     :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
     * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
@@ -16,10 +17,20 @@
       color: var(--text-main); font-family: 'Inter',sans-serif;
       min-height: 100vh; padding-bottom: 80px;
     }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .fade-up { opacity:0; animation: fadeUp 0.5s ease forwards; }
+    .fade-up.d1 { animation-delay:0.1s; }
+    .fade-up.d2 { animation-delay:0.2s; }
+    .fade-up.d3 { animation-delay:0.3s; }
+    .reveal { opacity:0; transform:translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
     .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
     .page-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 6px; }
     .page-title span { color: var(--accent); }
     .page-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+
     .tabs { display:flex; gap:6px; margin-bottom:24px; }
     .tab-btn {
       background:var(--card); border:1px solid var(--border);
@@ -29,26 +40,26 @@
     }
     .tab-btn:hover { border-color:#333; color:#ccc; }
     .tab-btn.active { background:#1a1a1a; border-color:#444; color:#fff; }
-    .podium { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:28px; }
-    .podium-item {
-      flex:1; max-width:200px; background:var(--card); border:1px solid var(--border);
-      border-radius:12px; padding:18px 14px; text-align:center;
+
+    /* CANVAS PODIUM */
+    .podium-canvas-wrap {
+      display: flex; justify-content: center;
+      margin-bottom: 32px;
     }
-    .podium-item.p1 { border-color:#3a3a1a; }
-    .podium-item.p2 { border-color:#2a2a2a; }
-    .podium-item.p3 { border-color:#2a1a0a; }
-    .podium-rank { font-size:20px; font-weight:800; margin-bottom:6px; }
-    .p1 .podium-rank { color:#fbbf24; }
-    .p2 .podium-rank { color:#9ca3af; }
-    .p3 .podium-rank { color:#d97706; }
-    .podium-name { font-size:13px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .podium-val { font-size:12px; color:var(--text-dim); font-family:'Fira Code',monospace; }
+
+    #podiumCanvas {
+      border-radius: 14px;
+      max-width: 100%;
+      display: block;
+    }
+
     .section-label {
       font-size:11px; font-weight:600; color:var(--text-dim);
       text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;
       display:flex; align-items:center; gap:10px;
     }
     .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
     .lb-table { width:100%; border-collapse:collapse; }
     .lb-table thead tr { border-bottom:1px solid var(--border); }
     .lb-table th { padding:9px 14px; text-align:left; font-size:10px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
@@ -59,38 +70,59 @@
     .lb-table td.rank { font-family:'Fira Code',monospace; color:#444; font-size:12px; }
     .lb-table td.name { font-weight:600; }
     .lb-table td.val { font-family:'Fira Code',monospace; color:var(--accent); font-size:12px; }
+
     .empty-state { text-align:center; padding:80px 24px; color:#333; }
     .empty-state i { font-size:36px; margin-bottom:14px; display:block; }
+    .empty-state p { font-size:13px; }
     .loading-state { display:flex; align-items:center; justify-content:center; gap:12px; padding:80px; color:#333; font-size:13px; }
     .spinner { width:18px; height:18px; border:2px solid #222; border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    @media (max-width:600px) { .container { padding:24px 16px; } .podium { gap:8px; } }
+
+    @media (max-width:600px) { .container { padding:24px 16px; } }
   </style>
 </head>
 <body>
   <div id="navbar"></div>
   <div class="container">
-    <div class="page-title">Leader<span>board</span></div>
-    <div class="page-sub">Ranking user berdasarkan berbagai kategori</div>
-    <div class="tabs">
+    <div class="page-title fade-up d1">Leader<span>board</span></div>
+    <div class="page-sub fade-up d2">Ranking user berdasarkan berbagai kategori</div>
+    <div class="tabs fade-up d3">
       <button class="tab-btn active" onclick="switchTab('level',this)"><i class="fa-solid fa-star"></i> Level</button>
       <button class="tab-btn" onclick="switchTab('saldo',this)"><i class="fa-solid fa-coins"></i> Saldo</button>
       <button class="tab-btn" onclick="switchTab('exp',this)"><i class="fa-solid fa-bolt"></i> EXP</button>
     </div>
-    <div id="lbContainer"><div class="loading-state"><div class="spinner"></div><span>Memuat...</span></div></div>
+
+    <div class="podium-canvas-wrap reveal">
+      <canvas id="podiumCanvas" width="860" height="280"></canvas>
+    </div>
+
+    <div id="lbContainer">
+      <div class="loading-state"><div class="spinner"></div><span>Memuat...</span></div>
+    </div>
   </div>
 
   <script src="assets/config.js"></script>
   <script>
     injectNavCSS();
     renderNav();
+
     let lbData = null;
     let currentTab = "level";
+
+    const RANK_COLORS = ["#9ca3af", "#fbbf24", "#d97706"];
+    const RANK_LABELS = ["🥈 #2", "🥇 #1", "🥉 #3"];
+    const PODIUM_HEIGHTS = [180, 220, 160];
+    const PODIUM_ORDER = [1, 0, 2]; // tampil: 2nd, 1st, 3rd
 
     async function load() {
       lbData = await fetchData("leaderboard.json");
       if (!lbData) {
-        document.getElementById("lbContainer").innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Data belum tersedia</p></div>`;
+        document.getElementById("lbContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <p>Data belum tersedia</p>
+          </div>`;
+        drawEmptyPodium();
         return;
       }
       setLastUpdated(lbData.lastUpdated);
@@ -104,46 +136,247 @@
       if (lbData) render(tab);
     }
 
-    function render(tab) {
-      const c = document.getElementById("lbContainer");
-      const list = lbData[tab] || [];
-      if (!list.length) {
-        c.innerHTML = `<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Belum ada data</p></div>`;
+    function drawEmptyPodium() {
+      const canvas = document.getElementById("podiumCanvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "#161616";
+      roundRect(ctx, 0, 0, W, H, 14);
+      ctx.fill();
+      ctx.fillStyle = "#333";
+      ctx.font = "14px Inter";
+      ctx.textAlign = "center";
+      ctx.fillText("Belum ada data", W/2, H/2);
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.lineTo(x+w-r, y);
+      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+      ctx.lineTo(x+w, y+h-r);
+      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+      ctx.lineTo(x+r, y+h);
+      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+      ctx.lineTo(x, y+r);
+      ctx.quadraticCurveTo(x, y, x+r, y);
+      ctx.closePath();
+    }
+
+    async function drawPodium(list, tab) {
+      const canvas = document.getElementById("podiumCanvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // BG
+      ctx.fillStyle = "#111111";
+      roundRect(ctx, 0, 0, W, H, 14);
+      ctx.fill();
+
+      // Grid
+      ctx.strokeStyle = "rgba(255,255,255,0.02)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+      // Top accent
+      const grad = ctx.createLinearGradient(0,0,W,0);
+      grad.addColorStop(0, "#fbbf24");
+      grad.addColorStop(0.5, "#4ade80");
+      grad.addColorStop(1, "#fbbf24");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, 3);
+
+      // Header
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fillRect(0, 3, W, 44);
+      ctx.strokeStyle = "rgba(255,255,255,0.05)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, 47); ctx.lineTo(W, 47); ctx.stroke();
+
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath(); ctx.arc(24, 25, 4, 0, Math.PI*2); ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("TOP LEADERBOARD", 40, 29);
+
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.font = "10px monospace";
+      ctx.fillText(`Alya MD  /  ${tab === "saldo" ? "saldo terbanyak" : tab === "exp" ? "exp terbanyak" : "level tertinggi"}`, 40, 42);
+
+      const now = new Date().toLocaleString("id-ID", { timeZone:"Asia/Jakarta" });
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      ctx.font = "9px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(now + " WIB", W - 20, 29);
+      ctx.textAlign = "left";
+
+      if (!list || list.length === 0) {
+        ctx.fillStyle = "#333";
+        ctx.font = "13px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText("Belum ada data", W/2, H/2 + 20);
         return;
       }
 
-      const medals = ["🥇","🥈","🥉"];
       const top3 = list.slice(0, 3);
-      const rest = list.slice(3);
-      const podOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
-      const podClass = top3.length >= 3 ? ["p2","p1","p3"] : ["p1","p2","p3"];
-      const medalIdx = top3.length >= 3 ? [1,0,2] : [0,1,2];
+      const colW = W / 3;
+      const baseY = H - 20;
 
+      for (let i = 0; i < Math.min(3, top3.length); i++) {
+        const orderIdx = PODIUM_ORDER[i]; // index data (0=1st, 1=2nd, 2=3rd)
+        const user = top3[orderIdx];
+        if (!user) continue;
+
+        const cx = colW * i + colW / 2;
+        const podH = PODIUM_HEIGHTS[i];
+        const podW = colW * 0.72;
+        const podX = cx - podW / 2;
+        const podY = baseY - podH;
+        const color = RANK_COLORS[i];
+
+        // Podium shadow
+        ctx.shadowColor = color + "44";
+        ctx.shadowBlur = 20;
+
+        // Podium block
+        const podGrad = ctx.createLinearGradient(podX, podY, podX, baseY);
+        podGrad.addColorStop(0, color + "33");
+        podGrad.addColorStop(1, color + "11");
+        ctx.fillStyle = podGrad;
+        roundRect(ctx, podX, podY, podW, podH, 8);
+        ctx.fill();
+
+        ctx.strokeStyle = color + "66";
+        ctx.lineWidth = 1;
+        roundRect(ctx, podX, podY, podW, podH, 8);
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = "transparent";
+
+        // Rank number inside podium
+        ctx.fillStyle = color + "44";
+        ctx.font = `bold ${podH * 0.5}px Inter`;
+        ctx.textAlign = "center";
+        ctx.fillText(`${orderIdx + 1}`, cx, baseY - podH * 0.15);
+
+        // Avatar circle
+        const avatarR = 28;
+        const avatarY = podY - avatarR - 10;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(cx, avatarY, avatarR + 4, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Avatar bg
+        ctx.fillStyle = "#1a1a1a";
+        ctx.beginPath();
+        ctx.arc(cx, avatarY, avatarR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Avatar initial
+        const initial = (user.name || "?")[0].toUpperCase();
+        ctx.fillStyle = color;
+        ctx.font = `bold 22px Inter`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initial, cx, avatarY);
+        ctx.textBaseline = "alphabetic";
+
+        // Medal
+        ctx.font = "18px serif";
+        ctx.textAlign = "center";
+        ctx.fillText(["🥇","🥈","🥉"][orderIdx], cx, avatarY - avatarR - 14);
+
+        // Name
+        const maxNameW = podW - 10;
+        let name = user.name || "Player";
+        ctx.font = "bold 12px Inter";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffffff";
+        while (ctx.measureText(name).width > maxNameW && name.length > 3) {
+          name = name.slice(0, -1);
+        }
+        if (name !== user.name) name += "..";
+        ctx.fillText(name, cx, podY - 12);
+
+        // Value
+        const val = tab === "saldo"
+          ? "Rp " + formatNum(user[tab])
+          : formatNum(user[tab]) + (tab === "level" ? " Lv" : " EXP");
+        ctx.font = "11px 'Fira Code'";
+        ctx.fillStyle = color;
+        ctx.fillText(val, cx, podY - 0);
+      }
+
+      // Footer
+      ctx.fillStyle = "rgba(255,255,255,0.02)";
+      ctx.fillRect(0, H - 20, W, 20);
+      ctx.strokeStyle = "rgba(255,255,255,0.04)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, H - 20); ctx.lineTo(W, H - 20); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.font = "9px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Alya MD Bot  —  leaderboard", 20, H - 6);
+      ctx.textAlign = "right";
+      ctx.fillText("top 3 players", W - 20, H - 6);
+    }
+
+    function render(tab) {
+      const c = document.getElementById("lbContainer");
+      const list = lbData[tab] || [];
+
+      drawPodium(list, tab);
+
+      const rest = list.slice(3);
+      if (!rest.length) {
+        c.innerHTML = "";
+        return;
+      }
+
+      const labels = { level:"Level", saldo:"Saldo", exp:"EXP" };
       const fmtVal = (u) => tab === "saldo" ? "Rp " + formatNum(u[tab]) : formatNum(u[tab]);
 
       c.innerHTML = `
-        <div class="podium">
-          ${podOrder.map((u,i) => `
-            <div class="podium-item ${podClass[i]}">
-              <div class="podium-rank">${medals[medalIdx[i]]}</div>
-              <div class="podium-name">${esc(u.name)}</div>
-              <div class="podium-val">${fmtVal(u)}</div>
-            </div>`).join("")}
-        </div>
-        ${rest.length ? `
-        <div class="section-label">Selanjutnya</div>
-        <table class="lb-table">
-          <thead><tr><th>#</th><th>Nama</th><th>${tab.charAt(0).toUpperCase()+tab.slice(1)}</th></tr></thead>
+        <div class="section-label reveal">Selanjutnya</div>
+        <table class="lb-table reveal">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama</th>
+              <th>${labels[tab]}</th>
+            </tr>
+          </thead>
           <tbody>
-            ${rest.map((u,i) => `
+            ${rest.map((u, i) => `
               <tr>
-                <td class="rank">${i+4}</td>
+                <td class="rank">${i + 4}</td>
                 <td class="name">${esc(u.name)}</td>
                 <td class="val">${fmtVal(u)}</td>
               </tr>`).join("")}
           </tbody>
-        </table>` : ""}`;
+        </table>`;
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
     }
+
+    // Scroll reveal global
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); observer.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
 
     load();
     setInterval(load, 60000);
