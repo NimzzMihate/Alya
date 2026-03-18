@@ -1,7 +1,7 @@
-// Ganti dengan repo data kamu
 const GITHUB_USER = "NimzzMihate";
 const GITHUB_REPO = "alya-data";
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
+const BOT_API = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main`;
 
 async function fetchData(file) {
   try {
@@ -22,12 +22,37 @@ const PAGES = [
   { href: "snippets.html",    icon: "fa-code",        label: "Snippets" },
   { href: "portfolio.html",   icon: "fa-user",        label: "Portfolio" },
   { href: "linktree.html",    icon: "fa-link",        label: "Links" },
+  { href: "contribute.html",  icon: "fa-heart",       label: "Contribute" },
+  { href: "feedback.html",    icon: "fa-paper-plane", label: "Feedback" },
 ];
+
+// THEME
+function getTheme() {
+  const saved = localStorage.getItem("theme");
+  if (saved) return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+  const btn = document.getElementById("themeToggle");
+  if (btn) btn.innerHTML = theme === "dark"
+    ? '<i class="fa-solid fa-sun"></i>'
+    : '<i class="fa-solid fa-moon"></i>';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
 
 function renderNav() {
   const current = window.location.pathname.split("/").pop() || "index.html";
   const nav = document.getElementById("navbar");
   if (!nav) return;
+
+  const theme = getTheme();
 
   nav.innerHTML = `
     <div class="nav-inner">
@@ -35,17 +60,56 @@ function renderNav() {
         <i class="fa-solid fa-robot"></i>
         ALYA MD
       </div>
-      <div class="nav-links">
+      <div class="nav-right-group">
+        <div class="nav-updated" id="navUpdated">-</div>
+        <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+          ${theme === "dark" ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>'}
+        </button>
+        <button class="nav-icon-btn" id="hamburger" onclick="toggleMenu()" title="Menu">
+          <i class="fa-solid fa-bars" id="hamburgerIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- DROPDOWN MENU -->
+    <div class="nav-dropdown" id="navDropdown">
+      <div class="nav-dropdown-inner">
         ${PAGES.map(p => `
-          <a href="${p.href}" class="nav-link ${current === p.href ? "active" : ""}">
+          <a href="${p.href}" class="nav-dropdown-link ${current === p.href ? "active" : ""}">
             <i class="fa-solid ${p.icon}"></i>
             <span>${p.label}</span>
+            ${current === p.href ? '<i class="fa-solid fa-circle-dot nav-active-dot"></i>' : ''}
           </a>`).join("")}
       </div>
-      <div class="nav-right">
-        <div class="nav-updated" id="navUpdated">-</div>
-      </div>
-    </div>`;
+    </div>
+    <div class="nav-overlay" id="navOverlay" onclick="closeMenu()"></div>`;
+
+  applyTheme(theme);
+}
+
+function toggleMenu() {
+  const dropdown = document.getElementById("navDropdown");
+  const overlay = document.getElementById("navOverlay");
+  const icon = document.getElementById("hamburgerIcon");
+  const isOpen = dropdown.classList.contains("open");
+  if (isOpen) {
+    dropdown.classList.remove("open");
+    overlay.classList.remove("show");
+    icon.className = "fa-solid fa-bars";
+  } else {
+    dropdown.classList.add("open");
+    overlay.classList.add("show");
+    icon.className = "fa-solid fa-xmark";
+  }
+}
+
+function closeMenu() {
+  const dropdown = document.getElementById("navDropdown");
+  const overlay = document.getElementById("navOverlay");
+  const icon = document.getElementById("hamburgerIcon");
+  dropdown.classList.remove("open");
+  overlay.classList.remove("show");
+  icon.className = "fa-solid fa-bars";
 }
 
 function setLastUpdated(ts) {
@@ -75,39 +139,108 @@ function formatRuntime(s) {
 }
 
 const NAV_CSS = `
-  #navbar {
-    background: rgba(13,13,13,0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #262626;
-    position: sticky; top: 0; z-index: 200;
+  :root {
+    --bg: #0d0d0d; --card: #161616; --border: #262626;
+    --text-main: #ffffff; --text-dim: #888888; --text-sub: #555555;
+    --accent: #4ade80; --nav-bg: rgba(13,13,13,0.95);
+    --input-bg: #1a1a1a; --hover-bg: #1e1e1e;
   }
+  [data-theme="light"] {
+    --bg: #f5f5f5; --card: #ffffff; --border: #e0e0e0;
+    --text-main: #111111; --text-dim: #555555; --text-sub: #888888;
+    --accent: #16a34a; --nav-bg: rgba(245,245,245,0.95);
+    --input-bg: #f0f0f0; --hover-bg: #eeeeee;
+  }
+
+  * { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease; }
+
+  body {
+    background-color: var(--bg) !important;
+    color: var(--text-main) !important;
+  }
+
+  #navbar {
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 300;
+  }
+
   .nav-inner {
     max-width: 1200px; margin: 0 auto;
-    padding: 0 24px; height: 56px;
-    display: flex; align-items: center; gap: 24px;
+    padding: 0 24px; height: 52px;
+    display: flex; align-items: center;
+    justify-content: space-between;
   }
+
   .nav-logo {
     font-size: 14px; font-weight: 800; letter-spacing: -0.5px;
     display: flex; align-items: center; gap: 8px;
-    color: #fff; white-space: nowrap; flex-shrink: 0;
+    color: var(--text-main); white-space: nowrap;
   }
-  .nav-logo i { color: #4ade80; font-size: 13px; }
-  .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
-  .nav-link {
-    display: flex; align-items: center; gap: 6px;
-    padding: 6px 11px; border-radius: 7px;
-    font-size: 12px; color: #555; text-decoration: none;
-    transition: all 0.2s; white-space: nowrap;
+  .nav-logo i { color: var(--accent); font-size: 13px; }
+
+  .nav-right-group {
+    display: flex; align-items: center; gap: 8px;
   }
-  .nav-link:hover { color: #ccc; background: #1a1a1a; }
-  .nav-link.active { color: #fff; background: #1e1e1e; }
-  .nav-link i { font-size: 11px; }
-  .nav-right { flex-shrink: 0; }
-  .nav-updated { font-size: 11px; color: #333; font-family: 'Fira Code', monospace; }
+
+  .nav-updated {
+    font-size: 11px; color: var(--text-sub);
+    font-family: 'Fira Code', monospace;
+  }
+
+  .nav-icon-btn {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 7px; width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-dim); font-size: 13px;
+    transition: all 0.2s;
+  }
+  .nav-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* DROPDOWN */
+  .nav-dropdown {
+    position: fixed;
+    top: 52px; right: 0;
+    width: 260px;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0 0 0 14px;
+    padding: 10px;
+    z-index: 299;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    max-height: calc(100vh - 52px);
+    overflow-y: auto;
+  }
+
+  .nav-dropdown.open { transform: translateX(0); }
+
+  .nav-dropdown-inner { display: flex; flex-direction: column; gap: 2px; }
+
+  .nav-dropdown-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    font-size: 13px; color: var(--text-dim);
+    text-decoration: none; transition: all 0.15s;
+  }
+
+  .nav-dropdown-link:hover { background: var(--hover-bg); color: var(--text-main); }
+  .nav-dropdown-link.active { background: var(--hover-bg); color: var(--text-main); font-weight: 600; }
+  .nav-dropdown-link i { font-size: 12px; width: 16px; text-align: center; }
+  .nav-dropdown-link.active > i:first-child { color: var(--accent); }
+  .nav-active-dot { margin-left: auto; font-size: 6px; color: var(--accent); }
+
+  .nav-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 298;
+    backdrop-filter: blur(2px);
+  }
+  .nav-overlay.show { display: block; }
+
   @media (max-width: 700px) {
-    .nav-inner { padding: 0 12px; gap: 12px; }
-    .nav-link span { display: none; }
-    .nav-link { padding: 8px; }
+    .nav-inner { padding: 0 16px; }
     .nav-updated { display: none; }
   }
 `;
