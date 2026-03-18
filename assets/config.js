@@ -25,31 +25,11 @@ const PAGES = [
   { href: "feedback.html",    icon: "fa-paper-plane", label: "Feedback" },
 ];
 
-function getTheme() {
-  const saved = localStorage.getItem("theme");
-  if (saved) return saved;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("theme", theme);
-  const btn = document.getElementById("themeToggle");
-  if (btn) btn.innerHTML = theme === "dark"
-    ? '<i class="fa-solid fa-sun"></i>'
-    : '<i class="fa-solid fa-moon"></i>';
-}
-
-function toggleTheme() {
-  const current = document.documentElement.getAttribute("data-theme") || "dark";
-  applyTheme(current === "dark" ? "light" : "dark");
-}
-
 function renderNav() {
   const current = window.location.pathname.split("/").pop() || "index.html";
   const nav = document.getElementById("navbar");
   if (!nav) return;
-  const theme = getTheme();
+
   nav.innerHTML = `
     <div class="nav-inner">
       <div class="nav-logo">
@@ -58,9 +38,6 @@ function renderNav() {
       </div>
       <div class="nav-right-group">
         <div class="nav-updated" id="navUpdated">-</div>
-        <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
-          ${theme === "dark" ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>'}
-        </button>
         <button class="nav-icon-btn" id="hamburger" onclick="toggleMenu()" title="Menu">
           <i class="fa-solid fa-bars" id="hamburgerIcon"></i>
         </button>
@@ -69,7 +46,7 @@ function renderNav() {
     <div class="nav-dropdown" id="navDropdown">
       <div class="nav-dropdown-inner">
         ${PAGES.map(p => `
-          <a href="${p.href}" class="nav-dropdown-link ${current === p.href ? "active" : ""}">
+          <a href="${p.href}" class="nav-dropdown-link ${current === p.href ? "active" : ""}" onclick="closeMenu()">
             <i class="fa-solid ${p.icon}"></i>
             <span>${p.label}</span>
             ${current === p.href ? '<i class="fa-solid fa-circle-dot nav-active-dot"></i>' : ''}
@@ -77,7 +54,6 @@ function renderNav() {
       </div>
     </div>
     <div class="nav-overlay" id="navOverlay" onclick="closeMenu()"></div>`;
-  applyTheme(theme);
 }
 
 function toggleMenu() {
@@ -104,6 +80,16 @@ function closeMenu() {
   if (overlay) overlay.classList.remove("show");
   if (icon) icon.className = "fa-solid fa-bars";
 }
+
+// Tutup dropdown kalau tap di luar
+document.addEventListener("click", function(e) {
+  const dropdown = document.getElementById("navDropdown");
+  const hamburger = document.getElementById("hamburger");
+  if (!dropdown || !hamburger) return;
+  if (!dropdown.contains(e.target) && !hamburger.contains(e.target)) {
+    closeMenu();
+  }
+});
 
 function setLastUpdated(ts) {
   if (!ts) return;
@@ -132,52 +118,26 @@ function formatRuntime(s) {
 
 const NAV_CSS = `
   :root {
-    --bg:#0d0d0d; --card:#161616; --border:#262626;
-    --text-main:#ffffff; --text-dim:#888888; --text-sub:#555555;
-    --accent:#4ade80; --nav-bg:rgba(13,13,13,0.95);
-    --input-bg:#1a1a1a; --hover-bg:#1e1e1e;
-  }
-  [data-theme="light"] {
-    --bg:#f5f5f5; --card:#ffffff; --border:#e0e0e0;
-    --text-main:#111111; --text-dim:#444444; --text-sub:#777777;
-    --accent:#16a34a; --nav-bg:rgba(245,245,245,0.95);
-    --input-bg:#f0f0f0; --hover-bg:#eeeeee;
+    --bg: #0d0d0d;
+    --card: #161616;
+    --border: #262626;
+    --text-main: #ffffff;
+    --text-dim: #aaaaaa;
+    --text-sub: #666666;
+    --accent: #4ade80;
+    --nav-bg: rgba(13,13,13,0.95);
+    --input-bg: #1a1a1a;
+    --hover-bg: #1e1e1e;
   }
 
   html, body { overflow-x: hidden !important; }
   * { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease; }
   body { background-color: var(--bg) !important; color: var(--text-main) !important; }
 
-  /* LIGHT MODE TEXT FIXES */
-  [data-theme="light"] .page-sub,
-  [data-theme="light"] .hero p,
-  [data-theme="light"] .feature-card p,
-  [data-theme="light"] .step-card p,
-  [data-theme="light"] .stats-bar-item .lbl,
-  [data-theme="light"] .metric-card .lbl,
-  [data-theme="light"] .stat-card .lbl,
-  [data-theme="light"] .section-label,
-  [data-theme="light"] .snippet-row-meta,
-  [data-theme="light"] .cmd-type,
-  [data-theme="light"] .activity-time,
-  [data-theme="light"] .profile-bio,
-  [data-theme="light"] .hero-stat { color: var(--text-dim) !important; }
-
-  [data-theme="light"] .stats-bar-item .val,
-  [data-theme="light"] .metric-card .val,
-  [data-theme="light"] .stat-card .val,
-  [data-theme="light"] .page-title,
-  [data-theme="light"] .hero h1 { color: var(--text-main) !important; }
-
-  /* STATS BAR — hapus highlight hitam pas tap */
-  .stats-bar-item {
-    -webkit-tap-highlight-color: transparent !important;
-    background: var(--card) !important;
-  }
+  /* STATS BAR fix hitam pas tap */
+  .stats-bar-item { -webkit-tap-highlight-color: transparent !important; }
   .stats-bar-item:active { background: var(--card) !important; }
-  .stats-bar-item:focus { background: var(--card) !important; outline: none; }
 
-  /* NAVBAR */
   #navbar {
     background: var(--nav-bg);
     backdrop-filter: blur(12px);
@@ -211,7 +171,6 @@ const NAV_CSS = `
   }
   .nav-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* DROPDOWN - fix overflow horizontal */
   .nav-dropdown {
     position: fixed;
     top: 52px; right: 0;
@@ -252,7 +211,7 @@ const NAV_CSS = `
 
   .nav-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4); z-index: 298;
+    background: rgba(0,0,0,0.5); z-index: 298;
     backdrop-filter: blur(2px);
   }
   .nav-overlay.show { display: block; }
