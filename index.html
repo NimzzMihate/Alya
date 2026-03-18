@@ -9,6 +9,9 @@
   <style>
     :root { --bg:#0d0d0d; --card:#161616; --border:#262626; --text-main:#fff; --text-dim:#888; --accent:#4ade80; }
     * { margin:0; padding:0; box-sizing:border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
       background: var(--bg);
       background-image: linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
@@ -16,8 +19,44 @@
       color: var(--text-main); font-family: 'Inter',sans-serif;
       min-height: 100vh; padding-bottom: 80px;
     }
+
+    /* FADE IN ANIMATION */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-up {
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .fade-up.d1 { animation-delay: 0.1s; }
+    .fade-up.d2 { animation-delay: 0.2s; }
+    .fade-up.d3 { animation-delay: 0.3s; }
+    .fade-up.d4 { animation-delay: 0.4s; }
+    .fade-up.d5 { animation-delay: 0.5s; }
+    .fade-up.d6 { animation-delay: 0.6s; }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
     .hero { padding: 80px 0 60px; }
+
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
       background: #0f1f0f; border: 1px solid #1a3a1a;
@@ -25,68 +64,93 @@
       font-size: 12px; color: var(--accent);
       margin-bottom: 24px; font-family: 'Fira Code',monospace;
     }
+
     .hero h1 { font-size: 3.8rem; font-weight: 800; letter-spacing: -3px; line-height: 1.05; margin-bottom: 16px; }
     .hero h1 span { color: var(--accent); }
     .hero p { color: var(--text-dim); font-size: 1rem; line-height: 1.7; max-width: 500px; margin-bottom: 32px; }
     .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 48px; }
+
     .btn-primary {
       background: #fff; color: #000; padding: 11px 20px;
       border-radius: 8px; font-weight: 700; font-size: 13px;
       text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
     }
-    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+
     .btn-secondary {
       background: var(--card); color: var(--text-main);
       border: 1px solid var(--border); padding: 11px 20px;
       border-radius: 8px; font-weight: 600; font-size: 13px;
       text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, transform 0.2s;
     }
-    .btn-secondary:hover { border-color: #444; }
+    .btn-secondary:hover { border-color: #444; transform: translateY(-2px); }
+
     .stats-bar {
       display: grid; grid-template-columns: repeat(4,1fr);
       gap: 1px; background: var(--border);
       border: 1px solid var(--border); border-radius: 12px;
       overflow: hidden; margin-bottom: 60px;
     }
-    .stats-bar-item { background: var(--card); padding: 22px; text-align: center; }
+    .stats-bar-item {
+      background: var(--card); padding: 22px; text-align: center;
+      transition: background 0.2s;
+    }
+    .stats-bar-item:hover { background: #1a1a1a; }
     .stats-bar-item .val { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
     .stats-bar-item .lbl { font-size: 12px; color: var(--text-dim); }
+
     .section-label {
       font-size: 11px; font-weight: 600; color: var(--text-dim);
       text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;
       display: flex; align-items: center; gap: 10px;
     }
     .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
     .features-grid {
       display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
       gap: 14px; margin-bottom: 60px;
     }
+
     .feature-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 12px; padding: 22px;
-      transition: border-color 0.2s, transform 0.2s;
+      transition: border-color 0.3s, transform 0.3s, background 0.3s;
     }
-    .feature-card:hover { border-color: #333; transform: translateY(-3px); }
+    .feature-card:hover { border-color: #333; transform: translateY(-4px); background: #1a1a1a; }
+
     .feature-card .icon {
       background: #1f1f1f; border: 1px solid #2a2a2a;
       border-radius: 10px; width: 40px; height: 40px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 15px; color: var(--text-dim); margin-bottom: 14px;
+      font-size: 15px; color: #fff; margin-bottom: 14px;
+      transition: background 0.3s, border-color 0.3s;
     }
+    .feature-card:hover .icon { background: #262626; border-color: #333; }
+
     .feature-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 7px; }
     .feature-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
     .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 14px; margin-bottom: 60px; }
-    .step-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+    .step-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 22px;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .step-card:hover { border-color: #333; transform: translateY(-3px); }
     .step-num { font-size: 11px; font-family: 'Fira Code',monospace; color: var(--accent); margin-bottom: 10px; }
     .step-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 7px; }
     .step-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
     .terminal {
       background: #000; border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden; margin-bottom: 60px;
       box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      transition: box-shadow 0.3s;
     }
+    .terminal:hover { box-shadow: 0 32px 80px rgba(0,0,0,0.7); }
+
     .terminal-header {
       background: #1a1a1a; padding: 11px 16px;
       display: flex; align-items: center; gap: 7px;
@@ -97,7 +161,24 @@
     .terminal-title { font-family:'Fira Code',monospace; font-size:11px; color:#444; margin-left:6px; }
     .terminal-body { padding: 18px 22px; font-family:'Fira Code',monospace; font-size:13px; line-height:2; }
     .t-p { color: var(--accent); } .t-c { color: #ccc; } .t-o { color: #555; } .t-s { color: var(--accent); }
-    footer { border-top: 1px solid var(--border); padding: 28px 0; text-align: center; font-size: 12px; color: #444; }
+
+    /* CURSOR BLINK */
+    .cursor {
+      display: inline-block;
+      width: 8px; height: 14px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 0; text-align: center;
+      font-size: 12px; color: #444;
+    }
+
     @media (max-width:700px) {
       .hero h1 { font-size: 2.4rem; letter-spacing: -2px; }
       .stats-bar { grid-template-columns: repeat(2,1fr); }
@@ -109,16 +190,16 @@
   <div id="navbar"></div>
   <div class="container">
     <div class="hero">
-      <div class="hero-badge"><i class="fa-solid fa-circle" style="font-size:7px"></i> WhatsApp Bot — Multi Fitur</div>
-      <h1>Bot Pintar<br>untuk <span>WhatsApp</span><br>kamu.</h1>
-      <p>Alya MD hadir dengan ratusan fitur lengkap — RPG, AI, downloader, games, snippet, dan banyak lagi.</p>
-      <div class="hero-btns">
-        <a href="https://wa.me/NOMOR_BOT" class="btn-primary" target="_blank"><i class="fa-brands fa-whatsapp"></i> Coba Sekarang</a>
+      <div class="hero-badge fade-up d1"><i class="fa-solid fa-circle" style="font-size:7px"></i> WhatsApp Bot — Multi Fitur</div>
+      <h1 class="fade-up d2">Bot Pintar<br>untuk <span>WhatsApp</span><br>kamu.</h1>
+      <p class="fade-up d3">Alya MD hadir dengan ratusan fitur lengkap — RPG, AI, downloader, games, snippet, dan banyak lagi.</p>
+      <div class="hero-btns fade-up d4">
+        <a href="https://chat.whatsapp.com/KoP1P1JnKUTCdxVRestOIZ" class="btn-primary" target="_blank"><i class="fa-brands fa-whatsapp"></i> Coba Sekarang</a>
         <a href="commands.html" class="btn-secondary"><i class="fa-solid fa-terminal"></i> Commands</a>
         <a href="dashboard.html" class="btn-secondary"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
         <a href="snippets.html" class="btn-secondary"><i class="fa-solid fa-code"></i> Snippets</a>
       </div>
-      <div class="stats-bar">
+      <div class="stats-bar fade-up d5">
         <div class="stats-bar-item"><div class="val" id="sGrp">-</div><div class="lbl">Total Grup</div></div>
         <div class="stats-bar-item"><div class="val" id="sUsr">-</div><div class="lbl">Total User</div></div>
         <div class="stats-bar-item"><div class="val" id="sFtr">-</div><div class="lbl">Total Fitur</div></div>
@@ -126,25 +207,25 @@
       </div>
     </div>
 
-    <div class="section-label">Fitur Unggulan</div>
+    <div class="section-label reveal">Fitur Unggulan</div>
     <div class="features-grid">
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-sword"></i></div><h3>RPG Game</h3><p>Adventure, mining, fishing, crafting, pirate mode, dan masak untuk heal.</p></div>
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-robot"></i></div><h3>AI Chat</h3><p>Chat dengan AI cerdas yang bisa bantu jawab pertanyaan dan banyak hal lainnya.</p></div>
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-download"></i></div><h3>Downloader</h3><p>Download dari YouTube, TikTok, Instagram, Facebook, Spotify, dan lainnya.</p></div>
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-code"></i></div><h3>JS Snippets</h3><p>Simpan dan share code JavaScript langsung dari WhatsApp ke website.</p></div>
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><h3>Group Manager</h3><p>Antilink, antitoxic, welcome message, dan berbagai fitur manajemen grup.</p></div>
-      <div class="feature-card"><div class="icon"><i class="fa-solid fa-gamepad"></i></div><h3>Mini Games</h3><p>Chess, UNO, monopoli, ular tangga, casino, dan berbagai game seru lainnya.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-dungeon"></i></div><h3>RPG Game</h3><p>Adventure, mining, fishing, crafting, pirate mode, dan masak untuk heal.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-robot"></i></div><h3>AI Chat</h3><p>Chat dengan AI cerdas yang bisa bantu jawab pertanyaan dan banyak hal lainnya.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-download"></i></div><h3>Downloader</h3><p>Download dari YouTube, TikTok, Instagram, Facebook, Spotify, dan lainnya.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-code"></i></div><h3>JS Snippets</h3><p>Simpan dan share code JavaScript langsung dari WhatsApp ke website.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><h3>Group Manager</h3><p>Antilink, antitoxic, welcome message, dan berbagai fitur manajemen grup.</p></div>
+      <div class="feature-card reveal"><div class="icon"><i class="fa-solid fa-gamepad"></i></div><h3>Mini Games</h3><p>Chess, UNO, monopoli, ular tangga, casino, dan berbagai game seru lainnya.</p></div>
     </div>
 
-    <div class="section-label">Cara Pakai</div>
+    <div class="section-label reveal">Cara Pakai</div>
     <div class="steps">
-      <div class="step-card"><div class="step-num">// 01</div><h3>Tambah Bot</h3><p>Klik "Coba Sekarang" dan tambahkan nomor bot ke kontak WhatsApp kamu.</p></div>
-      <div class="step-card"><div class="step-num">// 02</div><h3>Daftar Akun</h3><p>Kirim pesan ke bot, masukkan kode OTP yang dikirimkan untuk mendaftar.</p></div>
-      <div class="step-card"><div class="step-num">// 03</div><h3>Pakai Command</h3><p>Ketik <code style="color:#4ade80;font-family:'Fira Code'">.menu</code> untuk lihat semua command.</p></div>
-      <div class="step-card"><div class="step-num">// 04</div><h3>Enjoy!</h3><p>Eksplorasi ratusan fitur. Main RPG, download video, simpan snippet, dan lainnya!</p></div>
+      <div class="step-card reveal"><div class="step-num">// 01</div><h3>Tambah Bot</h3><p>Klik "Coba Sekarang" dan tambahkan nomor bot ke kontak WhatsApp kamu.</p></div>
+      <div class="step-card reveal"><div class="step-num">// 02</div><h3>Daftar Akun</h3><p>Kirim pesan ke bot, masukkan kode OTP yang dikirimkan untuk mendaftar.</p></div>
+      <div class="step-card reveal"><div class="step-num">// 03</div><h3>Pakai Command</h3><p>Ketik <code style="color:#4ade80;font-family:'Fira Code'">.menu</code> untuk lihat semua command.</p></div>
+      <div class="step-card reveal"><div class="step-num">// 04</div><h3>Enjoy!</h3><p>Eksplorasi ratusan fitur. Main RPG, download video, simpan snippet, dan lainnya!</p></div>
     </div>
 
-    <div class="terminal">
+    <div class="terminal reveal">
       <div class="terminal-header">
         <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
         <span class="terminal-title">alya-bot — demo</span>
@@ -154,27 +235,61 @@
         <div class="t-o">Menampilkan daftar command...</div>
         <div><span class="t-p">user@wa:~$</span> <span class="t-c">.adventure dragons peak</span></div>
         <div class="t-s">VICTORY! Kayu x12, Besi x8, Rank +45</div>
-        <div><span class="t-p">user@wa:~$</span> <span class="t-c">.snippet save Fungsi Debounce</span></div>
-        <div class="t-s">✅ Snippet tersimpan! ID: abc123</div>
-        <div><span class="t-p">user@wa:~$</span> <span class="t-c">_</span></div>
+        <div><span class="t-p">user@Nimzz:~$</span> <span class="t-c">.snippet save Fungsi Debounce</span></div>
+        <div class="t-s">Snippet tersimpan! ID: orangHitam123</div>
+        <div><span class="t-p">user@wa:~$</span> <span class="t-c"></span><span class="cursor"></span></div>
       </div>
     </div>
   </div>
-  <footer><div class="container">Alya MD &copy; 2025 — WhatsApp Bot</div></footer>
+  <footer><div class="container">Alya MD &copy; 2026 — WhatsApp Bot</div></footer>
 
   <script src="assets/config.js"></script>
   <script>
     injectNavCSS();
     renderNav();
+
     async function load() {
       const data = await fetchData("stats.json");
       if (!data) return;
-      document.getElementById("sGrp").textContent = formatNum(data.totalGroups);
-      document.getElementById("sUsr").textContent = formatNum(data.totalUsers);
-      document.getElementById("sFtr").textContent = formatNum(data.totalFeatures);
+
+      // Counter animation
+      function animateCount(el, target) {
+        const isFloat = String(target).includes(".");
+        let start = 0;
+        const duration = 1200;
+        const step = (timestamp) => {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const val = isFloat
+            ? (eased * parseFloat(target)).toFixed(1)
+            : Math.floor(eased * parseInt(target));
+          el.textContent = val;
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = target;
+        };
+        requestAnimationFrame(step);
+      }
+
+      animateCount(document.getElementById("sGrp"), data.totalGroups);
+      animateCount(document.getElementById("sUsr"), data.totalUsers);
+      animateCount(document.getElementById("sFtr"), data.totalFeatures);
       document.getElementById("sRating").textContent = data.ratingAvg + "/10";
       setLastUpdated(data.lastUpdated);
     }
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add("visible"), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
     load();
   </script>
 </body>
